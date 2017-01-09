@@ -1,0 +1,15 @@
+AlleleFreqTimeSeries.txt
+EffectiveMigrationRates.txt
+EffPopSizeData.txt
+FinalLocations.txt
+FitnessTSdeme0.txt
+FitnessTSdeme1.txt
+FixationLog.txt
+FSTtimeSeries.txt
+GrossMigrationRates.txt
+LociRemoved.txt
+MutationLog.txt
+NeutralAlleleFrequencies.txt
+NumberVariableLoci.txt
+RnumSeed.txt
+SelectedAlleleFrequencies.txt
