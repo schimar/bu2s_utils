@@ -1,15 +1,19 @@
-AlleleFreqTimeSeries.txt
-EffectiveMigrationRates.txt
-EffPopSizeData.txt
-FinalLocations.txt
-FitnessTSdeme0.txt
-FitnessTSdeme1.txt
-FixationLog.txt
-FSTtimeSeries.txt
-GrossMigrationRates.txt
-LociRemoved.txt
-MutationLog.txt
-NeutralAlleleFrequencies.txt
-NumberVariableLoci.txt
-RnumSeed.txt
-SelectedAlleleFrequencies.txt
+AlleleFreqTimeSeries.txt totalGenerationsElapsed locusID AFpatch0 AFpatch1 is_reversed_locus locType AF AFdiff
+EffectiveMigrationRates.txt MeanMagDvals varDvals meanMagDprimeVals varDprimeVals MeanMagDeltaVals varDeltaVals
+EffPopSizeData.txt patch nOffspring nReproducers, MeanMagOffPerParent, varOffPerParent 
+FinalLocations.txt D=1: xLocation patchLocation ;  D=2: Xlocation Ylocation patchLocation
+FitnessTSdeme0.txt totalGenerationsElapsed fitnessVals(n>1)
+FitnessTSdeme1.txt totalGenerationsElapsed fitnessVals(n>1)
+FixationLog.txt totalGenerationsElapsed locusID MAP chromosomeMembership S_MAX1 is_reversed_locus is_selected_locus
+FSTtimeSeries.txt totalGenerationsElapsed locusID Fst allele_frequencies S_MAX1 S_MAX0 chromosomeMembership MAP locType
+GrossMigrationRates.txt grossMigRate_patch0 grossMigRate_patch1
+LociRemoved.txt time locusID map_location chromosome S_MAX0 S_MAX1 H FitnessReversal MutationType
+MutationLog.txt time mut_num map_location chromosome chrom_loc S_MAX0 S_MAX1 H patch FitnessReversal MutationType
+NeutralAlleleFrequencies.txt totalGenerationsElapsed locusID allele_frequencies AFdiff nsnDist nsnS nsnLD
+NumberVariableLoci.txt totalGenerationsElapsed nVariableLoci nSELECTED_LOCI nNEUTRAL_LOCI totalDMIs totalPositiveEpis nPositiveEpisRegular nPositiveEpisReversed nRegularLoci nReversedLoci loci_per_chrom(n=nChrom) 
+RnumSeed.txt seed
+SelectedAlleleFrequencies.txt totalGenerationsElapsed, locusID allele_frequencies AFdiff S_MAX1 Fst nsnDist nsnS nsnLD
+AlleleFrequencySpectrum.csv totalGenerationsElapsed (2*N)+1 AFS
+DXYtimeSeries.csv time DxyDeme0Deme1
+NeutralAlleleFrequencySpectrum.csv totalGenerationsElapsed (2*N)+1 selectedAFS
+SelectedAlleleFrequencySpectrum.csv totalGenerationsElapsed (2*N)+1 neutralAFS

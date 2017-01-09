@@ -1,28 +1,23 @@
 #! /usr/bin/python
 #
-# This script
+# This script simply reads a file ("headers.txt") containing header information for a set of files from bu2s and prints said header info for the supplied file name (2nd argument).
 
-# reads a table containing header information for the bu2s output (see
-
-# Usage: ./clean_runInfo.py <input-file_name.txt> <new_file_name.txt>
+# Usage: ./getHeader.py <file_name>
 
 
 from sys import argv
-#import re
-#import shutil
-#import tempfile
 
 file = argv[1]
 
 with open("headers.txt", 'r') as hdrFile:
     hdrs = dict()
     for line in hdrFile:
-        print line
-
+        line = line.split('\n')[0].split(' ')
+        hdrs[line[0]] = line[1:len(line)]
+        #print hdrs[line[0]]
     hdrFile.close()
 
 
-
-
+print ' '.join(hdrs[file])
 
 
