@@ -17,3 +17,12 @@ AlleleFrequencySpectrum.csv totalGenerationsElapsed (2*N)+1 AFS
 DXYtimeSeries.csv time DxyDeme0Deme1
 NeutralAlleleFrequencySpectrum.csv totalGenerationsElapsed (2*N)+1 selectedAFS
 SelectedAlleleFrequencySpectrum.csv totalGenerationsElapsed (2*N)+1 neutralAFS
+LDselSitesAvg.txt totalGenerationsElapsed LDselSitesAvgVal
+LDselSitesSame.txt totalGenerationsElapsed LDval dist
+LDselSitesDiff.txt totalGenerationsElapsed LDval
+LDneutSitesAvg.txt totalGenerationsElapsed LDneutSitesAvgVal
+LDneutSitesSame.txt totalGenerationsElapsed LDval (dist)
+LDneutSitesDiff.txt totalGenerationsElapsed LDval
+LDvalues.txt time locus1 locus2 LDcoef Dprime Delta MapDist S_MAX1loc1 S_MAX1loc2 locus1Type locus2type
+EpistasisOverTime.txt totalGenerationsElapsed locusID0 MAP0 chromosomeMembership0 is_reversed_locus0 locusID1 MAP1 chromosomeMembership1 is_reversed_locus1 sipt (*(epi_coeff_matrix+(ii*nLOCI)+jj)) 
+RecordingTimes.txt nRecordingTimes incr*i 
