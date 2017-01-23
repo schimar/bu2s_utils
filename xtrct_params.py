@@ -10,7 +10,6 @@ from sys import argv
 runName = argv[2]
 
 with open(argv[1], 'r') as file:
-    #hdrs = dict()
     newline = list()
     newline.append(runName)
     for lineORG in file:
@@ -18,7 +17,6 @@ with open(argv[1], 'r') as file:
         if line[0] == 'CodeVersion':
             if line[1] != "'bu2s_3.6.1';":
                 print 'Warning: %s is version %s; parameters not added' % (runName, line[1])
-                #print type(line[1])
             else:
                 continue
         elif line[0] == '':
@@ -31,7 +29,6 @@ with open(argv[1], 'r') as file:
             else:
                 value = line[1].split(';')[0]
             newline.append(value)
-            #print line[0]
     print '\t'.join(newline)
 
     file.close()
