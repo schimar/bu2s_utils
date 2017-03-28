@@ -1,5 +1,5 @@
 AlleleFreqTimeSeries.txt totalGenerationsElapsed locusID AFpatch0 AFpatch1 is_reversed_locus locType AF AFdiff
-EffectiveMigrationRates.txt MeanMagDvals varDvals meanMagDprimeVals varDprimeVals MeanMagDeltaVals varDeltaVals
+EffectiveMigrationRates.txt totalGenElapsed eme0 eme1 nVariableLoci nResidents, nImmigrants, avgResFit[j], avgImmFit[j], maxFit[j], minFit[j], randomFit[j], avgPatchFitness[j]
 EffPopSizeData.txt patch nOffspring nReproducers, MeanMagOffPerParent, varOffPerParent 
 FinalLocations.txt D=1: xLocation patchLocation ;  D=2: Xlocation Ylocation patchLocation
 FitnessTSdeme0.txt totalGenerationsElapsed fitnessVals(n>1)
@@ -17,10 +17,10 @@ AlleleFrequencySpectrum.csv totalGenerationsElapsed (2*N)+1 AFS
 DXYtimeSeries.csv time DxyDeme0Deme1
 NeutralAlleleFrequencySpectrum.csv totalGenerationsElapsed (2*N)+1 selectedAFS
 SelectedAlleleFrequencySpectrum.csv totalGenerationsElapsed (2*N)+1 neutralAFS
-LDselSitesAvg.txt totalGenerationsElapsed LDselSitesAvgVal
+LDselSitesAvg.txt totalGenerationsElapsed DeltaSame/totSame DeltaDiff/totDiff LDselSitesAvgVal
 LDselSitesSame.txt totalGenerationsElapsed LDval dist
 LDselSitesDiff.txt totalGenerationsElapsed LDval
-LDneutSitesAvg.txt totalGenerationsElapsed LDneutSitesAvgVal
+LDneutSitesAvg.txt totalGenerationsElapsed DeltaSame/totSame DeltaDiff/totDiff LDneutSitesAvgVal
 LDneutSitesSame.txt totalGenerationsElapsed LDval (dist)
 LDneutSitesDiff.txt totalGenerationsElapsed LDval
 LDvalues.txt time locus1 locus2 LDcoef Dprime Delta MapDist S_MAX1loc1 S_MAX1loc2 locus1Type locus2type
