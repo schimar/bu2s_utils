@@ -2,7 +2,7 @@
 ##################################################################################################
 ##################################################################################################
 library(rhdf5) 
-library(scales)
+#library(scales)
 
 ####### 
 #  coupling 
@@ -21,68 +21,187 @@ names(df) <- tolower(names(df))
 
 # example run (215499) 
 
-fst <- read.table("xRuns/Run215499/FSTtimeSeries.txt.bz2")
+fst <- read.table("xRuns/Run215500/FSTtimeSeries.txt.bz2")
 colnames(fst) <- c("nGen", "locusID", "Fst", "allele_frequencies", "S_MAX1", "S_MAX0", "chromosomeMembership", "MAP", "locType")
 
-
-#plot(fst$nGen, fst$Fst, col= as.factor(fst$locType))
-
-
 # afts
-
-afts <- read.table("xRuns/Run215499/AlleleFreqTimeSeries.txt.bz2")
+afts <- read.table("xRuns/Run215500/AlleleFreqTimeSeries.txt.bz2")
 colnames(afts) <- c("nGen", "locusID", "AFpatch0", "AFpatch1", "is_reversed_locus", "locType", "AF", "AFdiff")
+
+# LDs
+LDneut <- read.table('xRuns/Run215500/LDneutSitesAvg.txt.bz2')
+LDsel <- read.table('xRuns/Run215500/LDselSitesAvg.txt.bz2')
+
+
+#r499 <- coupCong(df, fst, afts, 'Run215500')
+r499 <- coupCong(df, fst, afts, LDsel, LDneut, 'Run215500')
 
 
 #plot(afts$nGen, afts$AFdiff, ylab= 'afDiff', xlab= 'nGen', pch= '.', cex= 2.5, col= alpha(afts$locType +1, 0.7))
 
-r499 <- coupCong(df, fst, afts, 'Run215499')
+########
+# s > m  (1600 runs)
+Sm <- df[which(df$sd_move < df$mean_s),]
+
+
+#############
+# s < m  (8784 runs)
+sM <- df[which(df$sd_move > df$mean_s),]
+
+sMsub <- split(sM, list(sM$sd_move, sM$mean_s), drop= T)
+#############
+# s == m  (2400 runs)
+
+sm <- df[which(df$sd_move == df$mean_s),]
+
+smSub <- split(sm, list(sm$sd_move, sm$mean_s), drop= T)
 
 
 
+###########################################################################################################################
 ###########################  hdf5  loop
 
+# test subset (from sM)
+#rs <- paste('Run215', seq(499, 550, 1), sep= '')
+#paramSub <- df[df$run %in% rs,]
 
 
-# loop through the respective parameter file (df  ->  Sm, sm, sM)
-paramSub <- Sm
+paramSub <- Sm#[1:10,]
+
+wrapH5('/media/schimar/schimar2/bu2s/h5/', paramSub, 'Sm')
+wrapH5('/media/schimar/dapperdata/bu2s/h5/', paramSub, 'Sm')
+
+wrapH5('/media/schimar/dapperdata/bu2s/h5/', smSub[[1]], 'sm')
+
+#paste(pathTmp, set, "/afts_", set, 'T.h5', sep= '')
+
+###########################################################################################################################
+# plot the PHIs ~ cline widths (full coupl, no coupling, and observed)
+
+
+cWallS <- lapply(r499$clineWallS, unlist)
+phiOncW <- mapply(rep, r499$phiObs, times= unlist(lapply(cWallS, length)))
+
+plot(1, type="n", xlab="", ylab="") #, xlim=c(0, 11000), ylim=c(-0.5, 0.5))
+
+
+# plot sStar, mean_s, and sBar
+plot(1, type="n", xlab="", ylab="", xlim=c(0, 1250), ylim=c(-0.2, 0.1))
+
+for (i in length(r499$sStarLeS)){
+	points(r499$sStarLeS[[i]]$sStar, col= 'green', pch= '.', cex= 1.5) #, type= 'l')
+	points(r499$sStarLeS[[i]]$s, col= 'grey10', pch= '.', cex= 1.5) # type= 'l')
+	points(unlist(r499$sBar), col= 'orange', pch= '.', cex= 1.5)
+}
+
+legend('topleft', legend= c('mean s', expression(bar(s)), expression('s'^'*')), fill= c('black', 'orange', 'green'))
+
+
+# set x&ylim values !
+summary(do.call("rbind", r499$sStarLeS))
+
+
+plot(unlist(r499$phiObs), xlim=  c(0, length(r499$phiObs)+2), ylim= c(0, max(unlist(r499$phiObs))+ 200), ylab= expression(paste(phi, ' obs.')), main= expression(paste(phi, ' obs.')), xlab= '', type= 'l')
+	points(unlist(r499$kruukPhi_sMax), type= 'l', col= 'grey70')
 
 
 
-for (i in 1:dim(paramSub)[1]){
-	run <- paramSub$run[i]
-	path <- paste('/runs/', run, sep= '')
-	fstTmp <- h5read('/media/schimar/schimar2/bu2s/h5/Sm/Fst_SmT.h5', name= path)[[1]]
-	aftsTmp <- h5read('/media/schimar/schimar2/bu2s/h5/Sm/Fst_SmT.h5', name= path)[[1]]
-	#
-	LDselTmp <- h5read('/media/schimar/schimar2/bu2s/h5/Sm/LDselAvg_SmT.h5', name= path)[[1]]
-	LDneuTmp <- h5read('/media/schimar/schimar2/bu2s/h5/Sm/LDneutAvg_SmT.h5', name= path)[[1]]
+#########
+plot(log10(unlist(r499$kruukPhi_sMax)), unlist(r499$clineWidthSmax), type= 'l', ylim= c(-0.5, 0.5))
+points(log10(unlist(phiOncW)), unlist(cWallS), pch= '.') #type= 'l')
 
 
-	colnames(fstTmp) <- c("nGen", "locusID", "Fst", "allele_frequencies", "S_MAX1", "S_MAX0", "chromosomeMembership", "MAP", "locType")
-	colnames(aftsTmp) <- c("nGen", "locusID", "AFpatch0", "AFpatch1", "is_reversed_locus", "locType", "AF", "AFdiff")
-	# read LDneut & LDsel, dXY (or use Fst), effMig
-	
-	# calculate coupling stats
-	# tmpCoup <- coupCong(df, run, fstTmp, aftsTmp, s= 1)
-	
-	# then plot stuff (func to be written)
+
+# pHat&pBarAllS vs PHIs
+pBallS <- lapply(r499$pBarAllS, unlist)
+#phi <- mapply(rep, r499$phiObs, times= unlist(lapply(cWallS, length)))
+
+plot(log10(unlist(r499$kruukPhi_sMax)), unlist(r499$pHat), ylim= c(0.3,0.7), type= 'l')
+points(log10(unlist(phiOncW)), unlist(pBallS), pch= '.', col= 'grey20')
+
+#lapply(r499$phiObs, rep, times= unlist(lapply(cWallS, length)))
+
+
+boxplot(unlist(r499$clineWidthSmax), unlist(lapply(r499$clineWallS, unlist)))
+
+
+####
+#nLDs <- split(LDneut, LDneut$V1)
+#sLDs <- split(LDsel, LDsel$V1)
+
+
+fstspl <- split(fst$Fst, fst$nGen)
+
+#mydf[ sample( which(mydf$gender=='F'), round(0.2*length(which(mydf$gender=='F')))), ]
+
+
+# initially set up plots
+
+#dev.set(2)
+#par(mfrow= c(1,1))
+#
+#dev.set(3)
+#par(mfrow= c(1,1))
+
+# 
+for(i in 1:length(r499$clineWallS)){
+	hist(r499$pBarAllS[[i]][[1]], xlim= c(-1,1))
 }
 
 
 
-	
+# eventually m_e L_e and s* should go in here (or log10(N x m_e) ?)
 
 
 
+close.screen(2, all.screens= T)
+
+
+#dev.set(j+1)
+		#hist(afDifflist[[j]], xlim= c(-1,1), ylim= c(0, 1400), main= mainList[j])
+		text(0.5, 1300, paste('nGen=', i*1000))
+		#hist(LDlist[[j]], main= paste('LD', mainList[j]))
+		# plot LD 
+		#dev.set(j)
+		#hist(afDifflist[[j]], xlim= c(-1,1), ylim= c(0, 1400))
+
+
+for (i in 1:1174){
+	hist(r499$afDiffN[[i]], xlim= c(-1,1), ylim= c(0, 1400))
+}
+
+
+par(bg = "white") # erase.screen() will appear not to work
+                  # if the background color is transparent 
+                  # (as it is by default on most devices).
+split.screen(c(2,2)) # split display into two screens
+
+#split.screen(c(1,3), screen = 2) # now split the bottom half into 3
+screen(1) # prepare screen 1 for output
+plot(10:-10)
+screen(4) # prepare screen 4 for output
+plot(10:1)
+
+cols <- c('blue', 'red', 'black') #t(rainbow(3))
+plot(r499$FSTs$FSTneut, type= 'l', col= cols[1], ylim= c(0,1), xlim= c(0, length(r499$phiObs)+2))
+points(r499$FSTs$FSTsel, col= cols[2], type= 'l')
+points(r499$FSTs$FSTtot, col= cols[3], type= 'l', lty= 1)
+legend(200, 1, legend= c('neutral', 'selected', 'total'), fill= cols)
+
+plot(unlist(r499$phiObs), xlim=  c(0, length(r499$phiObs)+2), ylim= c(0,10005), ylab= expression(paste(phi, ' obs.')), main= expression(paste(phi, ' obs.')), xlab= '', type= 'l')
+points(unlist(r499$phiTil), type= 'l', col= 'green')
 
 
 
-
-
-
-
-
+# multiple windows
+#plot(1:1)
+#dev.new()
+#plot(2,2)
+#dev.set(dev.prev()) # go back to first
+#title(main="test dev 1")
+#
+#dev.set(dev.next()) # go to second
+#title(main="test dev 2")
 ###############  other files 
 
 LDneut <- read.table('xRuns/Run215499/LDneutSitesAvg.txt.bz2')
