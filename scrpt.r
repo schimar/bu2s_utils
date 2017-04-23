@@ -1,7 +1,7 @@
 
 ##################################################################################################
 ##################################################################################################
-library(rhdf5) 
+#library(rhdf5) 
 #library(scales)
 
 ####### 
@@ -32,9 +32,24 @@ colnames(afts) <- c("nGen", "locusID", "AFpatch0", "AFpatch1", "is_reversed_locu
 LDneut <- read.table('xRuns/Run215500/LDneutSitesAvg.txt.bz2')
 LDsel <- read.table('xRuns/Run215500/LDselSitesAvg.txt.bz2')
 
+# me
+em <- read.table("xRuns/Run215500/EffectiveMigrationRates.txt.bz2")
+em <- em[,1:18]
+colnames(em)[1:6] <- c("nGen", "eme0", "eme1", "nVariableLoci", "nRes", "nImm")
 
-#r499 <- coupCong(df, fst, afts, 'Run215500')
-r499 <- coupCong(df, fst, afts, LDsel, LDneut, 'Run215500')
+
+
+#r499 <- ccStats(df, fst, afts, 'Run215500')
+r499 <- ccStats(df, fst, afts, LDsel, LDneut, em, 'Run215500', maf= 25e-4)
+
+plotStatic(r499, 'Run215500', df)
+
+
+
+
+
+############################################################################################################################
+############################################################################################################################
 
 
 #plot(afts$nGen, afts$AFdiff, ylab= 'afDiff', xlab= 'nGen', pch= '.', cex= 2.5, col= alpha(afts$locType +1, 0.7))
@@ -66,71 +81,230 @@ smSub <- split(sm, list(sm$sd_move, sm$mean_s), drop= T)
 #paramSub <- df[df$run %in% rs,]
 
 
-paramSub <- Sm#[1:10,]
+paramSub <- sMsub[[2]][1:10,]
+wrapH5(paramSub, 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
 
-wrapH5('/media/schimar/schimar2/bu2s/h5/', paramSub, 'Sm')
-wrapH5('/media/schimar/dapperdata/bu2s/h5/', paramSub, 'Sm')
+wrapH5(Sm[1:100,], 'Sm')
 
-wrapH5('/media/schimar/dapperdata/bu2s/h5/', smSub[[1]], 'sm')
+
+wrapH5(paramSub, 'Sm')
+
+wrapH5(smSub[[1]], 'sm')
+
+
+
+
+Sm[which(Sm$run == 'Run203006'),which(dfVar != 0)]
+
+
 
 #paste(pathTmp, set, "/afts_", set, 'T.h5', sep= '')
 
 ###########################################################################################################################
-# plot the PHIs ~ cline widths (full coupl, no coupling, and observed)
+# ccStats2 
+
+#c202971 <- readIn('Run202971', df, 'Sm', path= '/media/schimar/schimar2/bu2s/h5/')
+
+c500 <- readIn('Run215499', df, 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
+
+# plot(unlist(lapply(r499$afDiffS, mean)), type= 'l', col= 'red', cex= 1.5, ylim= c(-0.15, 0.18))
+# abline(h= 0, lty= 3)
+# points(unlist(lapply(r499$afDiffN, mean)), type= 'l', col= 'blue', cex= 1.5)
+
+cc500 <- readCCobj('Run215500', 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
+
+s500 <- ccStats2('Run215500', df, cc500, maf= 0.025)
+
+# Run206976
+ccT <- readCCobj('Run206976', 'sm', path= '/media/schimar/schimar2/bu2s/h5/')
+rcT <- ccStats(df, ccT$fst, ccT$afts, ccT$LDsel, ccT$LDneut, ccT$effMig, 'Run206976', maf= 0.0)
+
+# Run206976 (run with ts_sampling_freq = 194) 
+ccT <- readCCobj('Run203021', 'sm', path= '/media/schimar/schimar2/bu2s/h5/')
+rcT <- ccStats(df, ccT$fst, ccT$afts, ccT$LDsel, ccT$LDneut, ccT$effMig, 'Run206976', maf= 0.0)
 
 
-cWallS <- lapply(r499$clineWallS, unlist)
-phiOncW <- mapply(rep, r499$phiObs, times= unlist(lapply(cWallS, length)))
+#lapply(list.df, function(x)x[x$B!=2,])
 
-plot(1, type="n", xlab="", ylab="") #, xlim=c(0, 11000), ylim=c(-0.5, 0.5))
+
+
+#######################
+# calculate GWC time 
+
+
+mem <- calcMaxEffMig(r499$sBar, 0.05, unlist(lapply(fstspl, length)))[[2]]
+
+gwc499 <- calcGWCtime(em, mem, -1)
+
+# intersections (nGen) of em and afts&fst 
+
+	# if not the same time points, then create emReduced (with only the times that are in fst&afts)
+
+emRed <- em[em$nGen %in% unique(fst$nGen),]
+
+# calcMeanS with geometric mean of s values (and then use sBar, to compare the two?)
+	# maybe just calculate & output both? 
+
+sBarfreqs <- singleLocusEq(unlist(r499$sBar), m, singleS= F)
+
+# calcMaxEffMig (nLociS, sBarVector, m) 
+	# calculate exp. single-locus equilibrium frequencies in favored deme (and in the non-favored deme)  (peqvec & qvec) (maybe single func)
+	
+	# calculate fitnesses (of random immigrant and random resident, respectively (maybe single func), patchAvg)
+		# if equilibrium frequency == 1, then 1+s_i (nRes = fitness of random resident)  (since randomRes = (1 + (peq * s))^L )
+
+		# randomImm = fitness of random immigrant (randomImm = (1 + (q * s))^L )
+
+	# patchAvgFit <- (randomImm * m)+ ((1 - m) * randomRes)
+
+	# maxEffMig(i) <- (randomImm * m) / patchAvgFit
+
+
+# calcGWCtime  (calcGWCtime3 in makeDataSummary.m)
+	# (emReduced, maxEffMig, df$END_PERIOD_ALLOPATRY)
+
+	# if em[nGen] >= 0.5 * maxEffMig[nGen]      # still close to random
+		# gwcTime <- NaN
+		# gwc not reached
+	# else 
+		# find the last time where effMig was greater than the threshold for independent loci 
+		# if gwcIndex < 1
+			# gwcTime <- end_period_allopatry
+		# else: 
+			# gwcTime <- nGen[gwcIndex]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#plot(1, type="n", xlab="", ylab="") #, xlim=c(0, 11000), ylim=c(-0.5, 0.5))
 
 
 # plot sStar, mean_s, and sBar
 plot(1, type="n", xlab="", ylab="", xlim=c(0, 1250), ylim=c(-0.2, 0.1))
 
-for (i in length(r499$sStarLeS)){
-	points(r499$sStarLeS[[i]]$sStar, col= 'green', pch= '.', cex= 1.5) #, type= 'l')
-	points(r499$sStarLeS[[i]]$s, col= 'grey10', pch= '.', cex= 1.5) # type= 'l')
-	points(unlist(r499$sBar), col= 'orange', pch= '.', cex= 1.5)
-}
+points(r499$sStarLeS$sStar, col= 'green', pch= '.', cex= 1.5) #, type= 'l')
+points(r499$sStarLeS$s, col= 'grey10', pch= '.', cex= 1.5) # type= 'l')
+points(r499$sBar, col= 'orange', pch= '.', cex= 1.5)
+
 
 legend('topleft', legend= c('mean s', expression(bar(s)), expression('s'^'*')), fill= c('black', 'orange', 'green'))
 
-
 # set x&ylim values !
-summary(do.call("rbind", r499$sStarLeS))
+# summary(do.call("rbind", r499$sStarLeS))
 
 
-plot(unlist(r499$phiObs), xlim=  c(0, length(r499$phiObs)+2), ylim= c(0, max(unlist(r499$phiObs))+ 200), ylab= expression(paste(phi, ' obs.')), main= expression(paste(phi, ' obs.')), xlab= '', type= 'l')
-	points(unlist(r499$kruukPhi_sMax), type= 'l', col= 'grey70')
+# plot Le  & me    (on log10 scale)   (or keep as is in plotStatic())
+
+plot(log10(abs(r499$sStarLeS$Le)), type= 'l', xlab= 'gen / 1e3', ylab= expression(paste('L'[e])), col= 'orange', ylim= c(-8, 4))
+points(log10(r499$effMig[,2]), type= 'l', col= 'black')
+
+# with log10(Le[zeros]) in effMig = 0:  
+g <- log10(r499$sStarLeS$Le)
+g[which(g == 'NaN')] <- 0
+
+plot(g, type= 'l', xlab= 'gen / 1e3', ylab= expression(paste('L'[e])), col= 'orange', ylim= c(-8, 4))
+points(log10(r499$effMig[,2]), type= 'l', col= 'black')
+
+e  <- r499$effMig[,2]
+e[which(e == 0)] <- 1e-5
 
 
 
-#########
-plot(log10(unlist(r499$kruukPhi_sMax)), unlist(r499$clineWidthSmax), type= 'l', ylim= c(-0.5, 0.5))
-points(log10(unlist(phiOncW)), unlist(cWallS), pch= '.') #type= 'l')
+points(log(unlist(r499$sBar)), type= 'l')
+
+###############    (max) EffMig 
+#
+plot(r499$maxEffMigSbar, col= 'orange', type= 'l', ylim= c(0, (max(r499$effMig$eme0) + 0.8* max(r499$effMig$eme0))), ylab= 'migration rate', xlab= 'gen / 1e3' )
+points(r499$effMig$eme0, col= 'black', type= 'l')
+points(r499$maxEffMigMeanS, col= 'green', type= 'l')
+
+abline(h= 0.05, col= 'grey70', lty= 3)
+abline(v= r499$gwcTimeSbar$gwcTime/1e3, col= 'orange', lty= 2)
+abline(v= r499$gwcTimeMeanS$gwcTime/1e3, col= 'green', lty= 2)
+
+cols <- c('orange', 'green', 'black', 'grey70', 'orange', 'green')
+legend('right', legend= c(expression(paste('maxEffMig ', bar(s))), 'maxEffMig meanS', expression(paste('m'[e0])), 'm', expression(paste('gwcTime ', bar(s))), 'gwcTime meanS'), col= cols, lty= c(1,1,1,3,2,2), pch= c(NA, NA, NA, NA, NA, NA), pt.cex= 2, seg.len= 0.9, cex= 1.1)
+
+
+wrapEffMigPlot <- function(path, data, setname, ...) {
+	# function to read individual runs (from vector of runs), calculate CC and plotStatic
+	#
+	for (i in 1:dim(data)[1]){
+		run <- data$run[i]
+		path5 <- paste('/runs/', run, sep= '')
+		#
+		ccObjTmp <- readCCobj(run, setname, path)
+		ccTmp <- ccStats(data, ccObjTmp$fst, ccObjTmp$afts, ccObjTmp$LDsel, ccObjTmp$LDneut, ccObjTmp$effMig, run)
+		#
+		plot(ccTmp$maxEffMigSbar, col= 'orange', type= 'l', ylab= 'migration rate', xlab= 'gen / 1e3' )     #, ylim= c(0, (max(ccTmp$effMig[,2]) + 0.8* max(ccTmp$effMig[,2])))
+		points(ccTmp$effMig[,2], col= 'black', type= 'l')
+		points(ccTmp$maxEffMigMeanS, col= 'green', type= 'l')
+		
+		abline(h= 0.05, col= 'grey70', lty= 3)
+		abline(v= ccTmp$gwcTimeSbar$gwcTime/1e3, col= 'orange', lty= 2)
+		abline(v= ccTmp$gwcTimeMeanS$gwcTime/1e3, col= 'green', lty= 2)
+		
+		cols <- c('orange', 'green', 'black', 'grey70', 'orange', 'green')
+		legend('right', legend= c(expression(paste('maxEffMig ', bar(s))), 'maxEffMig meanS', expression(paste('m'[e0])), 'm', expression(paste('gwcTime ', bar(s))), 'gwcTime meanS'), col= cols, lty= c(1,1,1,3,2,2), pch= c(NA, NA, NA, NA, NA, NA), pt.cex= 2, seg.len= 0.9, cex= 1.1)
+
+	H5close()
+	}
+}
+wrapEffMigPlot('/media/schimar/dapperdata/bu2s/h5/', sM[1:10,], 'sM')
+
+
+# 
+r202971 <- readIn('Run202971', df, 'Sm', path= '/media/schimar/schimar2/bu2s/h5/')
+
+plotStatic(r202971, 'Run202971')
 
 
 
-# pHat&pBarAllS vs PHIs
-pBallS <- lapply(r499$pBarAllS, unlist)
-#phi <- mapply(rep, r499$phiObs, times= unlist(lapply(cWallS, length)))
-
-plot(log10(unlist(r499$kruukPhi_sMax)), unlist(r499$pHat), ylim= c(0.3,0.7), type= 'l')
-points(log10(unlist(phiOncW)), unlist(pBallS), pch= '.', col= 'grey20')
-
-#lapply(r499$phiObs, rep, times= unlist(lapply(cWallS, length)))
 
 
-boxplot(unlist(r499$clineWidthSmax), unlist(lapply(r499$clineWallS, unlist)))
+
+
+####################################################################################
+######
+# plot the PHIs ~ cline widths (full coupl, no coupling, and observed)
+
+
+cWallS <- lapply(r499$clineWallS, unlist)
+pBarallS <- lapply(r499$pBarAllS, unlist)
+phiOncW <- mapply(rep, r499$phiObs, times= unlist(lapply(cWallS, length)))
 
 
 ####
-#nLDs <- split(LDneut, LDneut$V1)
-#sLDs <- split(LDsel, LDsel$V1)
+# afDiffs (N & S) vs phiObs
+phiOafDiffneut <- mapply(rep, r499$phiObs, times= unlist(lapply(r499$afDiffN, length)))
+phiOafDiffsel <- mapply(rep, r499$phiObs, times= unlist(lapply(r499$afDiffS, length)))
+
+plot(log10(unlist(r499$kruukPhi_sMax)), unlist(r499$pHat), type= 'l', ylim= c(0, 1))
+points(log10(unlist(phiOncW)), unlist(pBarallS), pch= '.') #type= 'l')
+#points(log10(unlist(phiOncW)), abs(unlist(cWallS)), pch= '.') #type= 'l')
 
 
-fstspl <- split(fst$Fst, fst$nGen)
+# phiObs & afDiff (S & N)
+points(log10(unlist(phiOafDiffneut)), abs(unlist(r499$afDiffN)), pch= '.', col= 'blue')
+points(log10(unlist(phiOafDiffsel)), abs(unlist(r499$afDiffS)), pch= '.', col= 'red')
+
+######################
+
+
+
 
 #mydf[ sample( which(mydf$gender=='F'), round(0.2*length(which(mydf$gender=='F')))), ]
 
@@ -188,8 +362,7 @@ points(r499$FSTs$FSTsel, col= cols[2], type= 'l')
 points(r499$FSTs$FSTtot, col= cols[3], type= 'l', lty= 1)
 legend(200, 1, legend= c('neutral', 'selected', 'total'), fill= cols)
 
-plot(unlist(r499$phiObs), xlim=  c(0, length(r499$phiObs)+2), ylim= c(0,10005), ylab= expression(paste(phi, ' obs.')), main= expression(paste(phi, ' obs.')), xlab= '', type= 'l')
-points(unlist(r499$phiTil), type= 'l', col= 'green')
+plot(r499$phiObs, xlim=  c(0, length(r499$phiObs)+2), ylim= c(0,10005), ylab= expression(paste(phi, ' obs.')), main= expression(paste(phi, ' obs.')), xlab= '', type= 'l')
 
 
 
@@ -202,34 +375,6 @@ points(unlist(r499$phiTil), type= 'l', col= 'green')
 #
 #dev.set(dev.next()) # go to second
 #title(main="test dev 2")
-###############  other files 
-
-LDneut <- read.table('xRuns/Run215499/LDneutSitesAvg.txt.bz2')
-
-LDsel <- read.table('xRuns/Run215499/LDselSitesAvg.txt.bz2')
-
-par(mfrow = c(2,3))
-plot(LDneut$V1, LDneut$V2)
-plot(LDneut$V1, LDneut$V3)
-plot(LDneut$V1, LDneut$V4)
-#points(LDneut$V1, LDneut$V2, col= 'lightgreen')
-#points(LDneut$V1, LDneut$V3, col= 'yellow')    # move along, nothing to see here...
-
-#
-plot(LDsel$V1, LDsel$V2)
-plot(LDsel$V1, LDsel$V3)
-plot(LDsel$V1, LDsel$V4)
-
-
-# me
-em <- read.table("xRuns/Run215499/EffectiveMigrationRates.txt.bz2")
-em <- em[,1:18]
-colnames(em)[1:6] <- c("nGen", "eme0", "eme1", "nVariableLoci", "nRes", "nImm")
-
-plot(em$nGen, em$eme0)
-points(em$nGen, em$eme1, col= 'orange')
-
-
 
 
 # dXY
@@ -251,61 +396,7 @@ points(neutAF$V1, neutAF$V4, col= 'red')
 ################## 
 
 
-# param (e.g. Sm)    
-plotOmat <- function(run, ...){
-	par(mfrow= c(2,4))
-	plot(LDneut$V1/1e5, LDneut$V4, ylab= 'avg LD neutral', xlab= 'nGen', pch= '.', cex= 2.5)
-	plot(neutAF$V1/1e5, neutAF$V7, xlab= 'nGen', ylab= 'neutral - LD w/ nsn', pch= '.', cex= 2.5)
-	plot(fst$V1/1e5, fst$V3, col= alpha(fst$V9+1, 0.7), xlab= 'Fst', ylab= 'nGen', pch= '.', cex= 2.5)
-	plot(em$nGen/1e5, em$eme0, col= alpha('black', 0.4), xlab= 'eme', ylab= 'nGen', pch= '.', cex= 2.5)
-	points(em$nGen/1e5, em$eme1, col= alpha('red', 0.7), pch= '.', cex= 2.5)
-	
-	
-	# 2nd row
-	plot(LDsel$V1/1e5, LDsel$V4, ylab= 'avg LD selected', xlab= 'nGen', pch= '.', cex= 2.5)
-	plot(selAF$V1/1e5, selAF$V9, xlab= 'nGen', ylab= 'selected - LD w/ nsn', pch= '.', cex= 2.5)
-	plot(dXY$V1/1e5, dXY$V2, xlab= 'dXY', ylab= 'nGen', pch= '.', cex= 2.5)
-	points(dXY$V1/1e5, dXY$V3, col= 'lightgreen', pch= '.', cex= 2.5)
-	points(dXY$V1/1e5, dXY$V4, col= 'yellow', pch= '.', cex= 2.5)
-	plot(selAF$V1, selAF$V4, xlab= 'af diff', ylab= 'nGen', col= alpha('red', 0.7), pch= '.', cex= 2.5)
-	points(neutAF$V1, neutAF$V4, col= alpha('black', 0.4), pch= '.', cex= 2.5)
-	#
-	Sys.sleep(2.5)
-}
 
-
-
-
-## Run215499
-#plotOmat <- function(run, ...){
-#	LDneut <- 
-#	LDsel <- 
-#	neutAF <- 
-#	selAF <- 
-#	fst <- 
-#	em <- 
-#	dXY <- dXYSm[[run]]$dXY
-#	#
-#	par(mfrow= c(2,4))#, mar=c(1.5,2,1,1) + 0.1, oma= c(5,0,0,0), mgp= c(0,1,0))
-#	plot(LDneut$V1/1e5, LDneut$V4, ylab= 'avg LD neutral', xlab= 'nGen', pch= '.', cex= 2.5)
-#	plot(neutAF$V1/1e5, neutAF$V7, xlab= 'nGen', ylab= 'neutral - LD w/ nsn', pch= '.', cex= 2.5)
-#	plot(fst$V1/1e5, fst$V3, col= alpha(fst$V9+1, 0.7), ylab= 'Fst', xlab= 'nGen', pch= '.', cex= 2.5)
-#	plot(em$nGen/1e5, em$eme0, col= alpha('black', 0.6), ylab= 'eme', xlab= 'nGen', pch= '.', cex= 2.5)
-#	points(em$nGen/1e5, em$eme1, col= alpha('red', 0.7), pch= '.', cex= 2.5)
-#	
-#	
-#	# 2nd row
-#	plot(LDsel$V1/1e5, LDsel$V4, ylab= 'avg LD selected', xlab= 'nGen', pch= '.', cex= 2.5)
-#	plot(selAF$V1/1e5, selAF$V9, xlab= 'nGen', ylab= 'selected - LD w/ nsn', pch= '.', cex= 2.5)
-#	plot(dXY$V1/1e5, dXY$V2, ylab= 'dXY', xlab= 'nGen', pch= '.', cex= 2.5)
-#	points(dXY$V1/1e5, dXY$V3, col= 'lightgreen', pch= '.', cex= 2.5)
-#	points(dXY$V1/1e5, dXY$V4, col= 'yellow', pch= '.', cex= 2.5)
-#	plot(selAF$V1/1e5, selAF$V4, ylab= 'af diff', xlab= 'nGen', col= alpha('red', 0.7), pch= '.', cex= 2.5)
-#	points(neutAF$V1/1e5, neutAF$V4, col= alpha('black', 0.5), pch= '.', cex= 2.5)
-#	
-#	#
-#	Sys.sleep(2.5)
-#}
 
 ######################
 
@@ -327,7 +418,7 @@ for (i in 1:1174){
 #}
 
 # 
-#r499 <- coupCong(df, fst, afts, 'Run215499')
+#r499 <- ccStats(df, fst, afts, 'Run215499')
 
 ##
 plot(unlist(r499$afDiffs), unlist(r499$clineWidthSmax), ylim= c(0,1))
@@ -369,7 +460,7 @@ plot(unlist(r499$afDiffS[[1]]), unlist(r499$clineWallS[[1]][[1]]), ylim= c(-1,1)
 #	return(kruukPhi)
 ##return(length(reco))
 #}
-#cc <- coupCong(fst, afts)
+#cc <- ccStats(fst, afts)
 
 
 ######################
