@@ -40,12 +40,9 @@ colnames(em)[1:6] <- c("nGen", "eme0", "eme1", "nVariableLoci", "nRes", "nImm")
 
 
 #r499 <- ccStats(df, fst, afts, 'Run215500')
-r499 <- ccStats(df, fst, afts, LDsel, LDneut, em, 'Run215500', maf= 25e-4)
+r499 <- ccStats.1(df, fst, afts, LDsel, LDneut, em, 'Run215500', maf= 25e-4)
 
-plotStatic(r499, 'Run215500', df)
-
-
-
+plotStatic.1(r499, 'Run215500', df)
 
 
 ############################################################################################################################
@@ -57,8 +54,9 @@ plotStatic(r499, 'Run215500', df)
 ########
 # s > m  (1600 runs)
 Sm <- df[which(df$sd_move < df$mean_s),]
+Sm <- Sm[which(Sm$run != 'Run209578'),]      # something's up with dim of LDsel in this run... exclude!)
 
-
+SmSub <- split(Sm, Sm$mutation_distribution)
 #############
 # s < m  (8784 runs)
 sM <- df[which(df$sd_move > df$mean_s),]
@@ -71,18 +69,18 @@ sm <- df[which(df$sd_move == df$mean_s),]
 
 smSub <- split(sm, list(sm$sd_move, sm$mean_s), drop= T)
 
-
-
+##
+sm$mutation_distribution[sm$run %in% smSub[[2]]$run]
 ###########################################################################################################################
 ###########################  hdf5  loop
 
 # test subset (from sM)
 #rs <- paste('Run215', seq(499, 550, 1), sep= '')
 #paramSub <- df[df$run %in% rs,]
-
+paths <-  '/media/schimar/schimar2/bu2s/h5/'
 
 paramSub <- sMsub[[2]][1:10,]
-wrapH5(paramSub, 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
+wrapH5(paramSub, 'sM', path= paths)
 
 wrapH5(Sm[1:100,], 'Sm')
 
@@ -98,6 +96,32 @@ Sm[which(Sm$run == 'Run203006'),which(dfVar != 0)]
 
 
 
+# Sm 
+phis <- xtractPhis(Sm[1:800,], 'Sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+
+
+plot(log10(phis[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
+for (i in 1:length(phis)) {
+	points(log10(phis[[i]]$kphisMax), col= 'black', type= 'l')
+	points(log10(phis[[i]]$phiObs), col= 'grey70', type= 'l')
+}
+
+
+
+# sm 
+phis_sm1 <- xtractPhis(smSub[[1]], 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+
+plot(log10(phis_sm1[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
+
+for (i in 1:length(phis_sm1)) {
+	points(log10(phis_sm1[[i]]$kphisMax), col= 'black', type= 'l')
+	points(log10(phis_sm1[[i]]$phiObs), col= 'grey70', type= 'l')
+}
+
+
+
+
+
 #paste(pathTmp, set, "/afts_", set, 'T.h5', sep= '')
 
 ###########################################################################################################################
@@ -105,7 +129,7 @@ Sm[which(Sm$run == 'Run203006'),which(dfVar != 0)]
 
 #c202971 <- readIn('Run202971', df, 'Sm', path= '/media/schimar/schimar2/bu2s/h5/')
 
-c500 <- readIn('Run215499', df, 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
+# c500 <- readIn('Run215499', df, 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
 
 # plot(unlist(lapply(r499$afDiffS, mean)), type= 'l', col= 'red', cex= 1.5, ylim= c(-0.15, 0.18))
 # abline(h= 0, lty= 3)
@@ -113,20 +137,269 @@ c500 <- readIn('Run215499', df, 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
 
 cc500 <- readCCobj('Run215500', 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
 
-s500 <- ccStats2('Run215500', df, cc500, maf= 0.025)
+s500 <- ccStats.2('Run215500', df, cc500, maf= 0.025)
 
 # Run206976
-ccT <- readCCobj('Run206976', 'sm', path= '/media/schimar/schimar2/bu2s/h5/')
-rcT <- ccStats(df, ccT$fst, ccT$afts, ccT$LDsel, ccT$LDneut, ccT$effMig, 'Run206976', maf= 0.0)
+#ccT <- readCCobj('Run206976', 'sm', path= '/media/schimar/schimar2/bu2s/h5/')
+#rcT <- ccStats(df, ccT$fst, ccT$afts, ccT$LDsel, ccT$LDneut, ccT$effMig, 'Run206976', maf= 0.0)
+#
+## Run206976 (run with ts_sampling_freq = 194) 
+ccT578 <- readCCobj('Run209578', 'Sm', path= '/media/schimar/schimar2/bu2s/h5/')
+rcT578 <- ccStats.2('Run209578', df, ccT578, maf= 0.025)
 
-# Run206976 (run with ts_sampling_freq = 194) 
-ccT <- readCCobj('Run203021', 'sm', path= '/media/schimar/schimar2/bu2s/h5/')
-rcT <- ccStats(df, ccT$fst, ccT$afts, ccT$LDsel, ccT$LDneut, ccT$effMig, 'Run206976', maf= 0.0)
+ccT577 <- readCCobj('Run209577', 'Sm', path= '/media/schimar/schimar2/bu2s/h5/')
+rcT577 <- ccStats.2('Run209577', df, ccT577, maf= 0.025)
+
+cc203124 <- readCCobj('Run203124', 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
+rc203124 <- ccStats.2('Run203124', df, cc203124, maf= 0.025)
+
+# in sm
+cc209425 <- readCCobj('Run209425', 'sm', path= '/media/schimar/schimar2/bu2s/h5/')
+rc209425 <- ccStats.2('Run209425', df, cc209425, maf= 0.025)
 
 
 #lapply(list.df, function(x)x[x$B!=2,])
 
+plotStatic.2(s500, 'Run215500', df)
 
+
+fstSpl <- split(fst, fst$nGen)
+aftsSpl <- split(afts, afts$nGen)
+
+####
+# plot MAP ~ Fst    (& dXY, LD, etc.)    NOTE:  not by chromosome !!
+
+for(i in 600:length(fstspl)) {
+	plot(fstspl[[i]]$MAP, fstspl[[i]]$Fst, col= as.factor(fstspl[[i]]$locType), ylim= c(0,1), main= paste('gen = ', i), ylab= 'Fst', xlab= 'map', pch= 20)
+	Sys.sleep(0.7)
+}
+
+
+par(mfrow= c(1,4))
+# color in the chromosomes (or separate in some other way) 
+for(i in 600:length(fstSpl)) {
+	chrom <- fstSpl[[i]]$chromosomeMembership
+	for (j in 1:length(unique(chrom))) {
+		cChrom <- fstSpl[[i]][which(chrom == unique(chrom)[j]),]
+		plot(cChrom$MAP, cChrom$Fst, col= as.factor(cChrom$locType), xlim= c(0, 25), ylim= c(0,1), main= paste('chrom ', j-1, ' gen = ', i), ylab= 'Fst', xlab= 'map', pch= 20)
+		lines(cChrom$MAP, cChrom$Fst, col= 'grey70')
+		}
+	Sys.sleep(0.4)
+
+}
+
+#####################################################
+
+##### spatial autocorrelation 
+
+# Moran's I 
+
+#library(spdep)
+
+library(ape)
+
+# for each chromosome:
+
+# get distances between loci 
+
+
+# moran.test(
+
+
+# split fst by gen, and by chrom 
+
+# chromosomeMembership in fstspl
+#chromLst <- lapply(fstspl, '[[', 7)
+
+#lapply(fstspl, split, f= chromLst)
+# hm, this takes forever...
+
+#frst <- fst[1:23,]
+#dists <- dist(frst$MAP)
+#dists.inv <- 1/dists
+#
+#hc <- hclust(dists, method="ward.D")
+#ct <- cutree(hc, k= 5)
+
+###ct <- cut(frst$MAP, quantile(frst$MAP, probs = seq(0, 1, by = 1/5)), right= F, labels= 1:5, include.lowest= T)
+
+##################################################### calc Moran's I for distance bins  (5)
+##############################################
+# calc Moran's I per chromosome (no distance bins within) 
+morI(fstSpl)
+
+# now with distance bins (k = 5)
+morIbin(fstSpl)
+
+#### NOTE:    need a wrapper for that stuff (with readCCobj) ???? 
+
+
+##############################################
+# plot the Moran's I values 
+plotFstMAPmorIbin(fstSpl, mIgen[[1]], time= 620)
+
+#plotMorIbin(mIgen, time= 630)
+
+plotMorI(mIgenAll, time= 600)
+
+
+
+
+
+
+
+##
+error.bar <- function(x, y, upper, lower=upper, length=0.1,...){
+if(length(x) != length(y) | length(y) !=length(lower) | length(lower) != length(upper))
+stop("vectors must be same length")
+arrows(x,y+upper, x, y-lower, angle=90, code=3, length=length, ...)
+}
+
+# barx <- barplot(y.means, names.arg=1:5,ylim=c(0,1.5), col="blue", axis.lty=1, xlab="Replicates", ylab="Value (arbitrary units)")
+# error.bar(barx,y.means, 1.96*y.sd/10)
+##
+
+
+
+
+##############################################
+
+# not done yet; how to arrange the plot ??
+
+plotFstMAPmorI <- function(fstspl, morI, time= 1,...) {
+	# function to plot both the MAP vs Fst and Moran's I and Moran's I per generation and chromosome
+	# with INPUT: fst data split by nGen, the nested list of Moran's I values (per gen and chrom) and the generation time to start the loop (with nGen/tsFreq).
+	
+	par(mfrow= c(2,4))
+	for(i in time:length(fstspl)) {
+		chrom <- fstspl[[i]]$chromosomeMembership
+		for (j in 1:length(unique(chrom))) {
+			cChrom <- fstspl[[i]][which(chrom == unique(chrom)[j]),]
+			plot(cChrom$MAP, cChrom$Fst, col= as.factor(cChrom$locType), xlim= c(0, 25), ylim= c(0,1), main= paste('chrom ', j-1, ' gen = ', i), ylab= 'Fst', xlab= 'map', pch= 20)
+			lines(cChrom$MAP, cChrom$Fst, col= 'grey70')
+		}
+		cMorI <- morI
+		barx <- barplot(cMorI$obs, ylim= c(-1, 1), pch= 20, main= paste('Morans I; gen = ', i), names.arg= c(0,1,2,3), xlab= 'chromosome', ylab= "Moran's I")
+		#lines(cMorIall$obs, col= 'grey70')
+		error.bar(barx, cMorIall$obs, cMorIall$sd)
+	}
+}
+
+#		for (j in 1:length(morI[[i]])) {
+#	
+#			# MorI 
+#			cMorI <- morI[[i]][[j]]
+#			barx <- barplot(cMorI$obs, ylim= c(-1, 1), pch= 20, main= paste("Moran's I, gen = ", i), names.arg= c(1,2,3,4,5), ylab= "Moran's I", xlab= 'distance bins')      # col= grouplist[[i]][[j]]
+#			sdI <- cMorI$sd
+#			sdI[which(sdI == Inf)] <- NA
+#			sdI[which(sdI == NaN)] <- NA
+#			error.bar(barx, cMorI$obs, sdI)
+#			}
+#		Sys.sleep(0.8)
+#
+#	}
+#}
+
+
+
+
+#############################################
+
+
+
+
+#library(Hmisc) 
+
+#arrows(x, avg-sdev, x, avg+sdev, length=0.05, angle=90, code=3)
+
+
+#lapply(mIgen[[1]][[1]], '[[', 1)      # get the observed Moran's I value 
+#
+#lapply(mIgen[[1]][[1]], '[[', 3)	  # get the sd
+
+
+
+
+
+
+
+dnearneigh(as.matrix(cbind(fst$MAP[1:115], rep(0, 115))), 0, 25)
+# use knearneigh to get the d2 value??? 
+
+# determine number of bins 
+nclass.scott(fst$MAP[1:115])	   # 5
+nclass.Sturges(fst$MAP[1:115])     # 8    (used in correlog in the ncf package)
+nclass.FD(fst$MAP[1:115])   	   # 5
+
+# create distance bins    (why not use kmeans clustering for that? this would give us the indeces for respective groups
+
+x <- kmeans(fst$MAP[1:23], 5)      #, algo= 'Lloyd')
+
+x$cluster 
+# then loop through the group number and 
+
+#dists <- mat2listw(as.matrix(dist(cChrom$MAP)))
+#mTest <- moran.test(cChrom$Fst, dists, na.action= na.omit, zero.policy= T, rank= T, adjust.n= T)
+
+
+
+# # keep separate screens open (with empty plot) 
+# 
+# for(i in 600:length(fstspl)) {
+# 	close.screen(all.screens= T)
+# 	#
+# 	chrom <- fstspl[[i]]$chromosomeMembership
+# 	#par(oma=c(4.5,4.5,4.5,4.5), mar=c(4.0,4.0,4.0,4.0) + 0.2, mgp= c(3,1,0))
+# 	split.screen(c(1,4))
+# 	screen(1)
+# 	plot(0:10, seq(0,1, 0.1), xlim= c(0, 25), ylim= c(0,1), type= 'n', xlab= 'map location (cM)', ylab= expression('F'[ST])) 
+# 	screen(2)
+# 	plot(0:10, seq(0,1, 0.1), xlim= c(0, 25), ylim= c(0,1), type= 'n', xlab= 'map location (cM)', ylab= expression('F'[ST])) 
+# 	screen(3)
+# 	plot(0:10, seq(0,1, 0.1), xlim= c(0, 25), ylim= c(0,1), type= 'n', xlab= 'map location (cM)', ylab= expression('F'[ST])) 
+# 	screen(4)
+# 	plot(0:10, seq(0,1, 0.1), xlim= c(0, 25), ylim= c(0,1), type= 'n', xlab= 'map location (cM)', ylab= expression('F'[ST])) 
+# 	#
+# 	#screen(1)
+# 	#points(fstspl[[i]]$MAP, fstspl[[i]]$Fst, col= as.factor(fstspl[[i]]$locType)
+# 	nChrom <- unique(chrom)
+# 	for (j in 1:length(nChrom)) {
+# 		cChrom <- fstspl[[i]][which(chrom == unique(chrom)[j]),]
+# 		screen(j)
+# 		points(cChrom$MAP, cChrom$Fst, col= as.factor(cChrom$locType), pch= 20)
+# 	}
+# }
+
+
+
+
+
+
+
+###
+# plot numbers of loci (total, s, totalMAF, sMAF)
+plot(s500$nLoci$nLoci, type= 'l')
+points(s500$nLoci$nLociS, type= 'l', col= 'red')
+points(s500$nLoci$nLocimaf, type= 'l', col= 'blue')
+points(s500$nLoci$nLociSmaf, type= 'l', col= 'yellow')
+
+
+### plot screen 3 with proper axes (log10-scale...)
+plot(log10(s500$phiObs), log= 'y', ylab= expression(paste('log'[10]~ phi)), xlab= xLab, type= 'l', col= 'grey70', axes= F) 
+points(log10(s500$kphisMax), type= 'l', col= 'black')
+axis(1, at= c(0, 200, 400, 600, 800, 1000, 1200), cex.axis= 1, lwd= 1)
+
+axis(2, at= seq(-2, 12, 2), labels= labels)   # not quite there yet!
+
+#plot(d2, type ="b", log="y",axes=FALSE, ylim=c(1,10^7))
+#axis(2, at=10^(0:6), labels=formatC(10^(0:6),format="f", digits=0),
+#     cex.axis=0.8,las=2 )
+#axis(1, at=1:25, cex.axis=.6)
+
+# from Dan Standage's old blog  (not quite ...) 
+ticks <- seq(0, 4, by=2)
+labels <- sapply(ticks, function(i) as.expression(bquote(10^ .(i))))
+axis(2, at=c(0, 1, 100), labels=labels)
 
 #######################
 # calculate GWC time 
