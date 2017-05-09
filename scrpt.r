@@ -17,8 +17,29 @@ df <- read.table("~/flaxmans/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
 names(df) <- tolower(names(df))
 
 
+########
+# s > m  (1600 runs)
+Sm <- df[which(df$sd_move < df$mean_s),]
+Sm <- Sm[which(Sm$run != 'Run209578'),]      # something's up with dim of LDsel in this run... exclude!)
+
+SmSub <- split(Sm, Sm$mutation_distribution)
+#############
+# s < m  (8784 runs)
+sM <- df[which(df$sd_move > df$mean_s),]
+
+sMsub <- split(sM, list(sM$sd_move, sM$mean_s), drop= T)
+#############
+# s == m  (2400 runs)
+
+sm <- df[which(df$sd_move == df$mean_s),]
+
+smSub <- split(sm, list(sm$sd_move, sm$mean_s), drop= T)
+
+##
+# sm$mutation_distribution[sm$run %in% smSub[[2]]$run]
 
 
+############################################################################################################################
 # example run (215499) 
 
 fst <- read.table("xRuns/Run215500/FSTtimeSeries.txt.bz2")
@@ -46,31 +67,10 @@ plotStatic.1(r499, 'Run215500', df)
 
 
 ############################################################################################################################
-############################################################################################################################
 
 
 #plot(afts$nGen, afts$AFdiff, ylab= 'afDiff', xlab= 'nGen', pch= '.', cex= 2.5, col= alpha(afts$locType +1, 0.7))
 
-########
-# s > m  (1600 runs)
-Sm <- df[which(df$sd_move < df$mean_s),]
-Sm <- Sm[which(Sm$run != 'Run209578'),]      # something's up with dim of LDsel in this run... exclude!)
-
-SmSub <- split(Sm, Sm$mutation_distribution)
-#############
-# s < m  (8784 runs)
-sM <- df[which(df$sd_move > df$mean_s),]
-
-sMsub <- split(sM, list(sM$sd_move, sM$mean_s), drop= T)
-#############
-# s == m  (2400 runs)
-
-sm <- df[which(df$sd_move == df$mean_s),]
-
-smSub <- split(sm, list(sm$sd_move, sm$mean_s), drop= T)
-
-##
-sm$mutation_distribution[sm$run %in% smSub[[2]]$run]
 ###########################################################################################################################
 ###########################  hdf5  loop
 
@@ -97,28 +97,90 @@ Sm[which(Sm$run == 'Run203006'),which(dfVar != 0)]
 
 
 # Sm 
-phis <- xtractPhis(Sm[1:800,], 'Sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+phis_Sm <- xtractPhis(Sm, 'Sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
 
 
-plot(log10(phis[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
-for (i in 1:length(phis)) {
-	points(log10(phis[[i]]$kphisMax), col= 'black', type= 'l')
-	points(log10(phis[[i]]$phiObs), col= 'grey70', type= 'l')
+plot(log10(phis_Sm[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
+for (i in 1:length(phis_Sm)) {
+	points(log10(phis_Sm[[i]]$kphisMax), col= 'black', type= 'l')
+	points(log10(phis_Sm[[i]]$phiObs), col= 'grey70', type= 'l')
 }
 
 
 
 # sm 
-phis_sm1 <- xtractPhis(smSub[[1]], 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+phis_sm <- xtractPhis(sm, 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
 
-plot(log10(phis_sm1[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
 
-for (i in 1:length(phis_sm1)) {
-	points(log10(phis_sm1[[i]]$kphisMax), col= 'black', type= 'l')
-	points(log10(phis_sm1[[i]]$phiObs), col= 'grey70', type= 'l')
+plot(log10(phis_sm[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
+for (i in 1:length(phis_sm)) {
+	points(log10(phis_sm[[i]]$kphisMax), col= 'black', type= 'l')
+	points(log10(phis_sm[[i]]$phiObs), col= 'grey70', type= 'l')
+}
+
+#phis_sm1 <- xtractPhis(smSub[[1]], 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+#
+#
+#plot(log10(phis_sm1[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
+#for (i in 1:length(phis_sm1)) {
+#	points(log10(phis_sm1[[i]]$kphisMax), col= 'black', type= 'l')
+#	points(log10(phis_sm1[[i]]$phiObs), col= 'grey70', type= 'l')
+#}
+
+
+
+
+
+# sM
+#phis_sM1 <- xtractPhis(sMsub[[1]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+phis_sM2 <- xtractPhis(sMsub[[2]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+phis_sM3 <- xtractPhis(sMsub[[3]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+
+
+phis_sM4 <- xtractPhis(sMsub[[4]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+phis_sM5 <- xtractPhis(sMsub[[5]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+phis_sM6 <- xtractPhis(sMsub[[6]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+phis_sM7 <- xtractPhis(sMsub[[7]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+
+
+
+#phis_sM8 <- xtractPhis(sMsub[[9]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+#phis_sM9 <- xtractPhis(sMsub[[9]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+
+
+
+
+
+#
+plot(log10(phis_sM[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
+for (i in 1:length(phis_sM)) {
+	points(log10(phis_sM[[i]]$kphisMax), col= 'black', type= 'l')
+	points(log10(phis_sM[[i]]$phiObs), col= 'grey70', type= 'l')
 }
 
 
+
+
+
+# plot phis & afDiffS
+
+# Sm
+#plot(log10(phis_Sm[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
+plot(log10(cGenPHIs$kphisMax), cGenPHIs$pHatsMax, type= 'n') #, ylim= c(-0.45,  1), xlim= c(-2, max(log10(cGenPHIs$kphisMax))), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])), col= 'black')
+
+
+for (i in 1:length(phis_Sm)) {
+	cGenPHIs <- phis_Sm[[i]]
+	cWallS <- lapply(cGenPHIs$clineWallS, unlist)
+	phiOncW <- mapply(rep, cGenPHIs$phiObs, times= unlist(lapply(cWallS, length)))
+
+	plot(log10(cGenPHIs$kphisMax), cGenPHIs$pHatsMax, type= 'l', ylim= c(-0.45,  1), xlim= c(-2, max(log10(cGenPHIs$kphisMax))), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])), col= 'black')
+	#abline(h= 0, lty= 3)
+	#}
+	points(log10(unlist(phiOncW)), unlist(cWallS), pch= '.', col= 'grey70') #type= 'l')
+	points(log10(unlist(cGenPHIs$phiObs)), unlist(lapply(lapply(cGenPHIs$afDiffS, abs), mean)), pch= '.', cex= 1.4, col= 'red')
+	points(log10(unlist(cGenPHIs$phiObs)), unlist(lapply(lapply(cGenPHIs$afDiffN, abs), mean)), pch= '.', cex= 1.4, col= 'blue')
+	}
 
 
 
@@ -138,6 +200,10 @@ for (i in 1:length(phis_sm1)) {
 cc500 <- readCCobj('Run215500', 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
 
 s500 <- ccStats.2('Run215500', df, cc500, maf= 0.025)
+
+
+slim500 <- ccStats.2slim('Run215500', df, cc500, maf= 0.025)
+
 
 # Run206976
 #ccT <- readCCobj('Run206976', 'sm', path= '/media/schimar/schimar2/bu2s/h5/')
@@ -194,10 +260,6 @@ for(i in 600:length(fstSpl)) {
 
 # Moran's I 
 
-#library(spdep)
-
-library(ape)
-
 # for each chromosome:
 
 # get distances between loci 
@@ -226,21 +288,21 @@ library(ape)
 ##################################################### calc Moran's I for distance bins  (5)
 ##############################################
 # calc Moran's I per chromosome (no distance bins within) 
-morI(fstSpl)
+mIgen <- calcMorI(fstSpl)
 
 # now with distance bins (k = 5)
-morIbin(fstSpl)
+mIbin <- calcMorIbin(fstSpl)
 
 #### NOTE:    need a wrapper for that stuff (with readCCobj) ???? 
 
 
 ##############################################
 # plot the Moran's I values 
-plotFstMAPmorIbin(fstSpl, mIgen[[1]], time= 620)
+plotFstMAPmorIbin(fstSpl, mIbin[[1]], time= 620)
 
 #plotMorIbin(mIgen, time= 630)
 
-plotMorI(mIgenAll, time= 600)
+plotMorI(mIgen, time= 600)
 
 
 

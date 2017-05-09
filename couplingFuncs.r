@@ -2,7 +2,7 @@
 
 library(rhdf5)
 library(scales)
-
+library(ape)
 
 # Barton 1983's coupling coefficient (theta = s/r)
 # Kruuk 1999's summed coupling coefficient (phi = (L-1)s/r) 
@@ -383,10 +383,30 @@ ccStats.2slim <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts
 	afDiff_s <- lapply(aftsSplS, '[[', 8)
 	afDiff_n <- lapply(lapply(aftsSpl, subset, locType == 0), '[[', 8)
 	avgAFdiff <- unlist(lapply(lapply(lapply(aftsSpl, '[[', 8), abs), mean))    # mean(abs(allAFdiffsPerGen))
+	
+	#and using actual selection coefficients (sSel == S_MAX0)
+	# calc single locus exp. under full coupling (sMax) 
+	sMaxlist <- lapply(PHIs$sMax, singleLocusEq, m= m, singleS= T)
+	pHatsMax <- unlist(lapply(sMaxlist, '[[', 1))
+	cWsMax <- unlist(lapply(sMaxlist, '[[', 2))
+	# calc single locus exp. using actual selection coefficients (sSel == S_MAX0)
+	sBarlist <- lapply(lapply(PHIs$sBar, singleLocusEq, m= m, singleS= F), unlist)
+	pHatsBar <- unlist(lapply(sBarlist, '[[', 1))
+	cWsBar <- unlist(lapply(sBarlist, '[[', 2))
+	
+	# equilibrium freq & cline width for all sSel
+	clineWidthAllS <- lapply(sSel, singleLocusEq, m= m, singleS= F)
+	pBarAllS <- lapply(clineWidthAllS, '[[', 1)
+	clineWallS <- lapply(clineWidthAllS, '[[', 2)
+
+
 	#
 ##### output
-	out <- list(, afDiff_s, afDiff_n, avgAFdiff, PHIs$kphiSmax, pHatsMax, PHIs$phiObs, m, effMig, unlist(maxEffMigSbar), gwcTimeSbar, unlist(maxEffMigMeanS), gwcTimeMeanS, clineWallS, pBarAllS, clineWidthAllS, nLoci, maf)
-	names(out) <- c('FSTs', 'LDsel', 'LDneut', 'afDiffS', 'afDiffN', 'avgAFdiffs', 'sMax', 'kphisMax', 'pHatsMax', 'cWsMax', 'phiObs', 'sBar', 'pHatsBar', 'cWsBar', 'meanS', 'sStarLeS', 'sd_move', 'effMig', 'maxEffMigSbar', 'gwcTimeSbar', 'maxEffMigMeanS', 'gwcTimeMeanS', 'clineWallS', 'pBarAllS', 'cWallS', 'nLoci', 'maf')
+	out <- list(afDiff_s, afDiff_n, avgAFdiff, PHIs$kphiSmax, pHatsMax, PHIs$phiObs, clineWallS, pBarAllS, clineWidthAllS)
+				
+				#m, effMig, unlist(maxEffMigSbar), gwcTimeSbar, unlist(maxEffMigMeanS), gwcTimeMeanS, clineWallS, pBarAllS, clineWidthAllS, nLoci, maf)
+	#names(out) <- c('afDiffS', 'afDiffN', 'avgAFdiffs', 'sMax', 'kphisMax', 'pHatsMax', 'cWsMax', 'phiObs', 'sBar', 'pHatsBar', 'cWsBar', 'meanS', 'sStarLeS', 'sd_move', 'effMig', 'maxEffMigSbar', 'gwcTimeSbar', 'maxEffMigMeanS', 'gwcTimeMeanS', 'pBarAllS', 'cWallS'   		, 'nLoci', 'maf')
+	names(out) <- c('afDiffS', 'afDiffN', 'avgAFdiffs', 'kphiSmax', 'pHatsMax', 'phiObs', 'pBarAllS', 'clineWallS')
 	return(out)
 }
 
@@ -454,6 +474,7 @@ plotStatic.2 <- function(ccObj, run, data, i= '', ...) {
 	emig <- ccObj$effMig[,2]
 	emig[which(emig == 0)] <- 1e-10
 	plot(log10(abs(ccObj$sStarLeS$Le)), type= 'l', xlab= xLab, ylab= expression(paste('log'[10], '.')) , ylim= c(-10, 7))#, ylim= c(min(log10(emig)), max(log10(abs(ccObj$sStarLeS$Le)))))      # ylab was expression(paste('log'[10]~'L'[e]))
+	abline(v= which.min(log10(abs(ccObj$sStarLeS$Le))), lty= 2, col= 'black')
 	points(log10(emig), col= 'blue', type= 'l')
 	points(log10(ccObj$sBar), type= 'l', col= 'orange')
 	points(log10(ccObj$sMax), type= 'l', col= 'red')
@@ -582,9 +603,10 @@ xtractPhis <- function(data, setname, path= '/media/schimar/dapperdata/bu2s/h5/'
 		#
 		ccObjTmp <- readCCobj(run, setname, path)
 		#ccTmp <- ccStats.2(data, ccObjTmp$fst, ccObjTmp$afts, ccObjTmp$LDsel, ccObjTmp$LDneut, ccObjTmp$effMig, run, maf= maf)
-		ccTmp <- ccStats.2(run= run, df= df, ccObj= ccObjTmp, maf= maf)
+		#ccTmp <- ccStats.2(run= run, df= df, ccObj= ccObjTmp, maf= maf)
+		ccTmp <- ccStats.2slim(run= run, df= df, ccObj= ccObjTmp, maf= maf)
 		#
-		runs[[i]] <- list(ccTmp$phiObs, ccTmp$kphisMax)   # what about afDiffs ???
+		runs[[i]] <- list(ccTmp$phiObs, ccTmp$kphisMax, ccTmp$afDiffS, ccTmp$afDiffN)   # what about afDiffs ???
 		names(runs)[i] <- run
 		names(runs[[i]]) <- c('phiObs', 'kphisMax')
 		#phiObs[[i]] <- ccTmp$phiObs
@@ -700,27 +722,37 @@ plotMorIbin <- function(morIgen, time= 1) {
 
 
 
-plotFstMAPmorIbin <- function(fstspl, morIbin, time= 1,...) {
+plotFstMAPmorIbin <- function(fstspl, morIbin, time= 1, static= F, wait= 0.1, ...) {
 	# function to plot both the MAP vs Fst and Moran's I and Moran's I per generation, chromosome and distance bin
-	# with INPUT: fst data split by nGen, nested list of Moran's I values (per gen, chrom and bin) and the generation time to start the loop (with nGen/tsFreq).
-	
-	par(mfrow= c(2,4))
+	# INPUT: fst data split by nGen, nested list of Moran's I values (per gen, chrom and bin) and the generation time to start the loop (with nGen/tsFreq).
+	close.screen(all.screens= T)
+
+	par(bg = "white") # erase.screen() will appear not to work if the background color is transparent 
+	split.screen(c(2,4))  
+
+
+	#par(mfrow= c(2,4))
 	for(i in time:length(fstspl)) {
 		chrom <- fstspl[[i]]$chromosomeMembership
 		for (j in 1:length(unique(chrom))) {
+			screen(j)
 			cChrom <- fstspl[[i]][which(chrom == unique(chrom)[j]),]
 			plot(cChrom$MAP, cChrom$Fst, col= as.factor(cChrom$locType), xlim= c(0, 25), ylim= c(0,1), main= paste('chrom ', j-1, ' gen = ', i), ylab= 'Fst', xlab= 'map', pch= 20)
 			lines(cChrom$MAP, cChrom$Fst, col= 'grey70')
-		}
-		for (j in 1:length(morIbin[[i]])) {
-			cMorI <- morIbin[[i]][[j]]
+		
+		#for (j in 1:length(morIbin[[i]])) {
+			screen(j+4)
+			cMorI <- morIbin[[1]][[i]][[j]]
 			barx <- barplot(cMorI$obs, ylim= c(-1, 1), pch= 20, main= paste("Moran's I, gen = ", i), names.arg= c(1,2,3,4,5), ylab= "Moran's I", xlab= 'distance bins')      # col= grouplist[[i]][[j]]
 			sdI <- cMorI$sd
 			sdI[which(sdI == Inf)] <- NA
 			sdI[which(sdI == NaN)] <- NA
 			error.bar(barx, cMorI$obs, sdI)
+		}
+		if (static == T) {
+				break
 			}
-		Sys.sleep(0.8)
+		Sys.sleep(wait)
 
 	}
 }
@@ -730,7 +762,8 @@ plotFstMAPmorIbin <- function(fstspl, morIbin, time= 1,...) {
 
 plotMorI <- function(mIgenAll, time= 1) {
 	# function to plot the single Moran's I values per generation and chromosome 
-	for (i in 600:length(mIgenAll)) {
+	# INPUT: output of calcMorI() and the generation time to start the loop (with nGen/tsFreq)
+	for (i in time:length(mIgenAll)) {
 		cMorIall <- mIgenAll[[i]]
 		barx <- barplot(cMorIall$obs, ylim= c(-1, 1), pch= 20, main= paste('Morans I; gen = ', i), names.arg= c(0,1,2,3), xlab= 'chromosome', ylab= "Moran's I")
 		#lines(cMorIall$obs, col= 'grey70')
@@ -759,7 +792,9 @@ plotMorI <- function(mIgenAll, time= 1) {
 # deprecated   (func to plot afDiffs per gen)
 
 
-plotGen <- function(ccObj, ...) {
+plotDyna <- function(ccObj, morIdata, time= 1, static= F, wait= 0, ...) {
+	# function to plot allele frequencies for selected and neutral sites per generation and Moran's I values (calcMorI) per generation and chromosome, as well as LD and avg Fst values (for S & N sites)
+	# INPUT: output of ccObj, calcMorI() and the generation time to start the loop (with nGen/tsFreq). static = T to stop after generation i (time). 
 
 	close.screen(all.screens= T)
 
@@ -767,9 +802,12 @@ plotGen <- function(ccObj, ...) {
 	split.screen(c(3,2))  
 
 	mainList <- c("neutral sites", "selected sites")
-	screen(6) #, new= F)
+	screen(1) #, new= F)
 	plot(unlist(ccObj$phiObs), xlim=  c(0, length(ccObj$phiObs)+2), ylim= c(0,10005), ylab= expression(paste(phi, ' obs.')), main= expression(paste(phi, ' obs.')), xlab= '', type= 'l')
 	#
+	#screen(4) 
+
+
 	screen(5)
 	cols <- c('blue', 'red', 'black') #t(rainbow(3))
 	plot(ccObj$FSTs$FSTneut, type= 'l', col= cols[1], ylim= c(0,1), xlim= c(0, length(ccObj$phiObs)+2), ylab= expression('avg F'[st]), main= expression('avg F'[st]))
@@ -787,7 +825,7 @@ plotGen <- function(ccObj, ...) {
 	points(1:length(ccObj$phiObs), LDlist[[2]][,2], col= 'red', type= 'l')
 	legend(200, 1, legend= c('neutral', 'selected'), fill= c('blue', 'red'))
 
-	for (i in 1:length(ccObj$phiObs)) {									# 1174 
+	for (i in time:length(ccObj$phiObs)) {									# 1174 
 		afDifflist <- list(ccObj$afDiffN[[i]], ccObj$afDiffS[[i]])
 		#LDlist <- list(ccObj$LDneut[1:i,], ccObj$LDsel[1:i,])
 		for (j in 1:2){
@@ -796,6 +834,11 @@ plotGen <- function(ccObj, ...) {
 			if (j == 1) {
 				text(0.5, 1000, paste('nGen=', i*1000))
 			}
+			screen(4)
+			cMorIall <- morIdata[[i]]		# mIgen
+			barx <- barplot(cMorIall$obs, ylim= c(-1, 1), pch= 20, main= paste('Morans I; gen = ', i), names.arg= c(0,1,2,3), xlab= 'chromosome', ylab= "Moran's I")
+			error.bar(barx, cMorIall$obs, cMorIall$sd)
+
 			#screen(j+2) #, new= F)
 			#plot(1:i, LDlist[[j]][,2], xlim= c(0, length(ccObj$phiObs)+2), ylim= c(0,1), main= paste('LD', mainList[j]), ylab= 'Avg LD', xlab= '', type= 'l')
 			
@@ -804,8 +847,14 @@ plotGen <- function(ccObj, ...) {
 		}
 				#screen(6) #, new= F)
 		#plot(1:i, unlist(lapply(fstspl, mean))[1:i], xlim=  c(0, length(ccObj$phiObs)+2), ylim= c(0,1), ylab= expression('avg F'[st]), main= expression('avg F'[st]), xlab= '', type= 'l') 
+		if (static == T) {
+				break
+			}
+		Sys.sleep(wait)
 	}
 }
+
+
 
 plotStatic.1 <- function(ccObj, run, data, ...) {
 	# function to create the per-run plots with LD, Fst, PHIs, Le and me
