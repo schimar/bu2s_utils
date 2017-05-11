@@ -627,7 +627,7 @@ xtractPhis <- function(data, setname, path= '/media/schimar/dapperdata/bu2s/h5/'
 		run <- data$run[i]
 		path5 <- paste('/runs/', run, sep= '')
 		#
-		ccObjTmp <- readCCobj(run, setname, path)
+		ccObjTmp <- readCCobjRude(run, setname, path)
 		#ccTmp <- ccStats.2(data, ccObjTmp$fst, ccObjTmp$afts, ccObjTmp$LDsel, ccObjTmp$LDneut, ccObjTmp$effMig, run, maf= maf)
 		ccTmp <- ccStats.2(run= run, df= df, ccObj= ccObjTmp, maf= maf)
 		#ccTmp <- ccStats.2slim(run= run, df= df, ccObj= ccObjTmp, maf= maf)
