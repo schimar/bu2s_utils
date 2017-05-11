@@ -618,7 +618,7 @@ calcPHIs <- function(aftsSpl, fstSpl, maf= 25e-4, mapL= 100, nChrom= 4) {
 
 
 
-xtractPhis <- function(data, setname, path= '/media/schimar/dapperdata/bu2s/h5/', maf= 25e-4, ...) {
+xtractPhis <- function(data, setname, folder, path= '/media/schimar//bu2s/h5/', maf= 25e-4, ...) {
 	# function to read individual runs (from vector of runs), calculate CC and create new list (of length(data)) that contains phiObs and kphismax
 	#
 	runs <- list()
@@ -627,7 +627,7 @@ xtractPhis <- function(data, setname, path= '/media/schimar/dapperdata/bu2s/h5/'
 		run <- data$run[i]
 		path5 <- paste('/runs/', run, sep= '')
 		#
-		ccObjTmp <- readCCobjRude(run, setname, path)
+		ccObjTmp <- readCCobjRude(run, setname, folder, path)
 		#ccTmp <- ccStats.2(data, ccObjTmp$fst, ccObjTmp$afts, ccObjTmp$LDsel, ccObjTmp$LDneut, ccObjTmp$effMig, run, maf= maf)
 		ccTmp <- ccStats.2(run= run, df= df, ccObj= ccObjTmp, maf= maf)
 		#ccTmp <- ccStats.2slim(run= run, df= df, ccObj= ccObjTmp, maf= maf)
