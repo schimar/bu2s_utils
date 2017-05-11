@@ -283,14 +283,14 @@ readCCobjRude <- function(run, smParam, folder, path, ...) {
 	colnames(aftsTmp) <- c("nGen", "locusID", "AFpatch0", "AFpatch1", "is_reversed_locus", "locType", "AF", "AFdiff")
 	H5close()
 	#
-	LDselTmp <- h5read(paste(path, smParam, '/LDselAvg_', folder, 'T.h5', sep= ''), name= path5)[[1]]
+	LDselTmp <- h5read(paste(path, smParam, '/LDselAvg_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
 	H5close()
-	LDneuTmp <- h5read(paste(path, smParam, '/LDneutAvg_', folder, 'T.h5', sep= ''), name= path5)[[1]]
+	LDneuTmp <- h5read(paste(path, smParam, '/LDneutAvg_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
 	H5close()
-	effMig <- h5read(paste(path, smParam, '/effMig_', folder, 'T.h5', sep= ''), name= path5)[[1]]
+	effMig <- h5read(paste(path, folder, '/effMig_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
 	colnames(effMig) <- c("nGen", "eme0", "eme1", "nVariableLoci", "nRes", "nImm", paste('V', seq(7, 26,1)))
 	H5close()
-	dXY <- h5read(paste(path, smParam, '/dXY_', folder, 'T.h5', sep= ''), name= path5)[[1]]
+	dXY <- h5read(paste(path, folder, '/dXY_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
 	colnames(dXY) <- c('nGen', 'dXY', 'deme0', 'deme1')
 	H5close()
 	#

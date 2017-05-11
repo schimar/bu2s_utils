@@ -13,6 +13,7 @@
 
 
 # on ruderalis:
+source('../../../bu2s_utils/couplingFuncs.r')
 df  <- read.table("../../paramsALL.txt", header= T, sep= '\t')
 names(df) <- tolower(names(df))
 
@@ -24,7 +25,8 @@ source("~/flaxmans/bu2s/bu2s_utils/couplingFuncs.r")
 df <- read.table("~/flaxmans/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
 names(df) <- tolower(names(df))
 
-########
+
+#########################    SUBSETS 
 # s > m  (1600 runs)
 Sm <- df[which(df$sd_move < df$mean_s),]
 Sm <- Sm[which(Sm$run != 'Run209578'),]      # something's up with dim of LDsel in this run... exclude!)
@@ -104,37 +106,19 @@ Sm[which(Sm$run == 'Run203006'),which(dfVar != 0)]
 
 
 # Sm 
-phis_Sm <- xtractPhis(Sm, 'Sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
-
-
-plot(log10(phis_Sm[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
-for (i in 1:length(phis_Sm)) {
-	points(log10(phis_Sm[[i]]$kphisMax), col= 'black', type= 'l')
-	points(log10(phis_Sm[[i]]$phiObs), col= 'grey70', type= 'l')
-}
-
-
+# phis_Sm <- xtractPhis(Sm, 'Sm', maf= 0.025)
+phis_Sm <- xtractPhis(Sm, 'Sm3', 'Sm', maf= 0.025)
 
 # sm 
-phis_sm <- xtractPhis(sm, 'sm', 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
-
-
-phis_Sm <- xtractPhis(Sm, 'Sm', path= '/media/schimar/FLAXMAN/h5/', maf= 0.025)
-
-#phis_sm1 <- xtractPhis(smSub[[1]], 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
-#
-#
-#plot(log10(phis_sm1[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
-#for (i in 1:length(phis_sm1)) {
-#	points(log10(phis_sm1[[i]]$kphisMax), col= 'black', type= 'l')
-#	points(log10(phis_sm1[[i]]$phiObs), col= 'grey70', type= 'l')
-#}
-
-
+phis_sm <- xtractPhis(sm, 'sm', 'sm', maf= 0.025)		#path= '/media/schimar/FLAXMAN/h5/', 
 
 
 
 # sM
+phis_sM <- xtractPhis(sM, 'sM2', 'sM', maf= 0.025)
+phis_sM <- xtractPhis(sM, setname= 'sM', folder= 'sM', maf= 0.025)
+
+
 #phis_sM1 <- xtractPhis(sMsub[[1]], 'sM', maf= 0.025)
 phis_sM2 <- xtractPhis(sMsub[[2]], 'sM', maf= 0.025)
 
@@ -151,13 +135,6 @@ phis_sM9 <- xtractPhis(sMsub[[9]], 'sM', maf= 0.025) 		# path= '/media/schimar/s
 
 
 
-
-#
-plot(log10(phis_sM[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
-for (i in 1:length(phis_sM)) {
-	points(log10(phis_sM[[i]]$kphisMax), col= 'black', type= 'l')
-	points(log10(phis_sM[[i]]$phiObs), col= 'grey70', type= 'l')
-}
 
 
 # load the .RData for PHIs 
@@ -177,6 +154,22 @@ for (i in 1:length(phis_sm)) {
 	points(log10(phis_sm[[i]][[2]]), col= 'black', type= 'l')   # kphisMax
 	points(log10(phis_sm[[i]][[1]]), col= 'grey70', type= 'l')  # phiObs
 }
+
+
+plot(log10(phis_Sm[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
+for (i in 1:length(phis_Sm)) {
+	points(log10(phis_Sm[[i]]$kphisMax), col= 'black', type= 'l')
+	points(log10(phis_Sm[[i]]$phiObs), col= 'grey70', type= 'l')
+}
+
+
+#
+plot(log10(phis_sM[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
+for (i in 1:length(phis_sM)) {
+	points(log10(phis_sM[[i]]$kphisMax), col= 'black', type= 'l')
+	points(log10(phis_sM[[i]]$phiObs), col= 'grey70', type= 'l')
+}
+
 
 
 
