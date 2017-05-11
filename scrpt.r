@@ -11,11 +11,18 @@
 # Kruuk 1999's summed coupling coefficient (phi = (L-1)s/r) 
 # Le (effective nLoci)  (Le = s*/s)
 
+
+# on ruderalis:
+df  <- read.table("../../paramsALL.txt", header= T, sep= '\t')
+names(df) <- tolower(names(df))
+
+
+#### pandapeter 
+
 source("~/flaxmans/bu2s/bu2s_utils/couplingFuncs.r")
 
 df <- read.table("~/flaxmans/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
 names(df) <- tolower(names(df))
-
 
 ########
 # s > m  (1600 runs)
@@ -110,6 +117,9 @@ for (i in 1:length(phis_Sm)) {
 
 # sm 
 phis_sm <- xtractPhis(sm, 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+
+
+phis_Sm <- xtractPhis(Sm, 'Sm', path= '/media/schimar/FLAXMAN/h5/', maf= 0.025)
 
 #phis_sm1 <- xtractPhis(smSub[[1]], 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
 #
