@@ -618,7 +618,7 @@ calcPHIs <- function(aftsSpl, fstSpl, maf= 25e-4, mapL= 100, nChrom= 4) {
 
 
 
-xtractPhis <- function(data, setname, folder, path= '/media/schimar//bu2s/h5/', maf= 25e-4, ...) {
+xtractPhis <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/', maf= 25e-4, ...) {
 	# function to read individual runs (from vector of runs), calculate CC and create new list (of length(data)) that contains phiObs and kphismax
 	#
 	runs <- list()
@@ -635,7 +635,7 @@ xtractPhis <- function(data, setname, folder, path= '/media/schimar//bu2s/h5/', 
 		avgAFdiffS <- unlist(lapply(lapply(ccTmp$afDiffS, abs), mean))
 		avgAFdiffN <- unlist(lapply(lapply(ccTmp$afDiffN, abs), mean))
 		cWallS <- lapply(ccTmp$cWallS, unlist)
-		runs[[i]] <- list(ccTmp$phiObs, ccTmp$kphisMax, ccTmp$pHatsMax, avgAFdiffS, avfAFdiffN, cWallS, ccTmp$pBarAllS)   # 
+		runs[[i]] <- list(ccTmp$phiObs, ccTmp$kphisMax, ccTmp$pHatsMax, avgAFdiffS, avgAFdiffN, cWallS, ccTmp$pBarAllS)   # 
 		names(runs)[i] <- run
 		names(runs[[i]]) <- c('phiObs', 'kphisMax', 'pHatsMax', 'afDiffS', 'afDiffN', 'cWallS', 'pBarAllS')
 		#phiObs[[i]] <- ccTmp$phiObs

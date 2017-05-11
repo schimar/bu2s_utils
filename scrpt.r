@@ -116,7 +116,7 @@ for (i in 1:length(phis_Sm)) {
 
 
 # sm 
-phis_sm <- xtractPhis(sm, 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+phis_sm <- xtractPhis(sm, 'sm', 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
 
 
 phis_Sm <- xtractPhis(Sm, 'Sm', path= '/media/schimar/FLAXMAN/h5/', maf= 0.025)
