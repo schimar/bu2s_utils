@@ -1,7 +1,7 @@
 # functions to calculate recombination and coupling statistics 
 
 library(rhdf5)
-library(scales)
+#library(scales)
 library(ape)
 
 # Barton 1983's coupling coefficient (theta = s/r)
@@ -603,12 +603,15 @@ xtractPhis <- function(data, setname, path= '/media/schimar/dapperdata/bu2s/h5/'
 		#
 		ccObjTmp <- readCCobj(run, setname, path)
 		#ccTmp <- ccStats.2(data, ccObjTmp$fst, ccObjTmp$afts, ccObjTmp$LDsel, ccObjTmp$LDneut, ccObjTmp$effMig, run, maf= maf)
-		#ccTmp <- ccStats.2(run= run, df= df, ccObj= ccObjTmp, maf= maf)
-		ccTmp <- ccStats.2slim(run= run, df= df, ccObj= ccObjTmp, maf= maf)
+		ccTmp <- ccStats.2(run= run, df= df, ccObj= ccObjTmp, maf= maf)
+		#ccTmp <- ccStats.2slim(run= run, df= df, ccObj= ccObjTmp, maf= maf)
 		#
-		runs[[i]] <- list(ccTmp$phiObs, ccTmp$kphisMax, ccTmp$afDiffS, ccTmp$afDiffN)   # what about afDiffs ???
+		avgAFdiffS <- unlist(lapply(lapply(ccTmp$afDiffS, abs), mean))
+		avgAFdiffN <- unlist(lapply(lapply(ccTmp$afDiffN, abs), mean))
+		cWallS <- lapply(ccTmp$cWallS, unlist)
+		runs[[i]] <- list(ccTmp$phiObs, ccTmp$kphisMax, ccTmp$pHatsMax, avgAFdiffS, avfAFdiffN, cWallS, ccTmp$pBarAllS)   # 
 		names(runs)[i] <- run
-		names(runs[[i]]) <- c('phiObs', 'kphisMax')
+		names(runs[[i]]) <- c('phiObs', 'kphisMax', 'pHatsMax', 'afDiffS', 'afDiffN', 'cWallS', 'pBarAllS')
 		#phiObs[[i]] <- ccTmp$phiObs
 		#names(phiObs)[i] <- run
 		#kphisMax[[i]] <- ccTmp$kphisMax
@@ -620,8 +623,7 @@ xtractPhis <- function(data, setname, path= '/media/schimar/dapperdata/bu2s/h5/'
 }		
 # maybe write another function ('ccStats.2 abgespeckt') to calcPHIs and get afDiffs  (so it doesn't take as outlandischly long to get this...) 
 
-
-
+unlist(lapply(lapply(ccObj$afDiffS, abs), mean))
 #############################################
 
 		######## Moran's I ########

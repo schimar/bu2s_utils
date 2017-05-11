@@ -111,13 +111,6 @@ for (i in 1:length(phis_Sm)) {
 # sm 
 phis_sm <- xtractPhis(sm, 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
 
-
-plot(log10(phis_sm[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
-for (i in 1:length(phis_sm)) {
-	points(log10(phis_sm[[i]]$kphisMax), col= 'black', type= 'l')
-	points(log10(phis_sm[[i]]$phiObs), col= 'grey70', type= 'l')
-}
-
 #phis_sm1 <- xtractPhis(smSub[[1]], 'sm', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
 #
 #
@@ -132,20 +125,18 @@ for (i in 1:length(phis_sm)) {
 
 
 # sM
-#phis_sM1 <- xtractPhis(sMsub[[1]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
-phis_sM2 <- xtractPhis(sMsub[[2]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
-phis_sM3 <- xtractPhis(sMsub[[3]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+#phis_sM1 <- xtractPhis(sMsub[[1]], 'sM', maf= 0.025)
+phis_sM2 <- xtractPhis(sMsub[[2]], 'sM', maf= 0.025)
+
+phis_sM3 <- xtractPhis(sMsub[[3]], 'sM', maf= 0.025)
 
 
-phis_sM4 <- xtractPhis(sMsub[[4]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
-phis_sM5 <- xtractPhis(sMsub[[5]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
-phis_sM6 <- xtractPhis(sMsub[[6]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
-phis_sM7 <- xtractPhis(sMsub[[7]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
-
-
-
-#phis_sM8 <- xtractPhis(sMsub[[9]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
-#phis_sM9 <- xtractPhis(sMsub[[9]], 'sM', path= '/media/schimar/schimar2/bu2s/h5/', maf= 0.025)
+phis_sM4 <- xtractPhis(sMsub[[4]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+phis_sM5 <- xtractPhis(sMsub[[5]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+phis_sM6 <- xtractPhis(sMsub[[6]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+phis_sM7 <- xtractPhis(sMsub[[7]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+phis_sM8 <- xtractPhis(sMsub[[8]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+phis_sM9 <- xtractPhis(sMsub[[9]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
 
 
 
@@ -159,11 +150,27 @@ for (i in 1:length(phis_sM)) {
 }
 
 
+# load the .RData for PHIs 
+names(phis_sm[[i]]) <- c('phiObs', 'kphisMax', 'afDiffS', 'afDiffN') # for sm, Sm, sM1 & sM2: forgot the afDiffs
 
+load('PHIs/sm/.RData')
 
 
 # plot phis & afDiffS
+# sm
+plot(log10(phis_sm[[1]][[2]]), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
+for (i in 1:length(phis_sm)) {
+	phiO <- phis_sm[[i]][[1]]
+	kphi <- phis_sm[[i]][[2]]
+	afDiffS <- phis_sm[[i]][[3]]
+	afDiffN <- phis_sm[[i]][[4]]
+	points(log10(phis_sm[[i]][[2]]), col= 'black', type= 'l')   # kphisMax
+	points(log10(phis_sm[[i]][[1]]), col= 'grey70', type= 'l')  # phiObs
+}
 
+
+
+####
 # Sm
 #plot(log10(phis_Sm[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
 plot(log10(cGenPHIs$kphisMax), cGenPHIs$pHatsMax, type= 'n') #, ylim= c(-0.45,  1), xlim= c(-2, max(log10(cGenPHIs$kphisMax))), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])), col= 'black')
@@ -202,7 +209,7 @@ cc500 <- readCCobj('Run215500', 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
 s500 <- ccStats.2('Run215500', df, cc500, maf= 0.025)
 
 
-slim500 <- ccStats.2slim('Run215500', df, cc500, maf= 0.025)
+#slim500 <- ccStats.2slim('Run215500', df, cc500, maf= 0.025)
 
 
 # Run206976
