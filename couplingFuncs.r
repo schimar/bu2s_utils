@@ -283,9 +283,9 @@ readCCobjRude <- function(run, smParam, folder, path, ...) {
 	colnames(aftsTmp) <- c("nGen", "locusID", "AFpatch0", "AFpatch1", "is_reversed_locus", "locType", "AF", "AFdiff")
 	H5close()
 	#
-	LDselTmp <- h5read(paste(path, smParam, '/LDselAvg_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
+	LDselTmp <- h5read(paste(path, folder, '/LDselAvg_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
 	H5close()
-	LDneuTmp <- h5read(paste(path, smParam, '/LDneutAvg_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
+	LDneuTmp <- h5read(paste(path, folder, '/LDneutAvg_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
 	H5close()
 	effMig <- h5read(paste(path, folder, '/effMig_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
 	colnames(effMig) <- c("nGen", "eme0", "eme1", "nVariableLoci", "nRes", "nImm", paste('V', seq(7, 26,1)))
