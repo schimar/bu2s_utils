@@ -13,8 +13,8 @@
 
 
 # on ruderalis:
-source('../../../bu2s_utils/couplingFuncs.r')
-df  <- read.table("../../paramsALL.txt", header= T, sep= '\t')
+source('~/schimar/bu2s/bu2s_utils/couplingFuncs.r'
+df  <- read.table("~/schimar/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
 names(df) <- tolower(names(df))
 
 
@@ -129,6 +129,25 @@ phis_sM6 <- xtractPhis(sMsub[[6]], setname= 'sM', folder= 'sM2', maf= 0.025) 		#
 phis_sM7 <- xtractPhis(sMsub[[7]], setname= 'sM', folder= 'sM2', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
 phis_sM8 <- xtractPhis(sMsub[[8]], setname= 'sM', folder= 'sM2', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
 phis_sM9 <- xtractPhis(sMsub[[9]], setname= 'sM', folder= 'sM2', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+
+
+
+# xtractLe 
+
+Le_Sm <- xtractLe(Sm, setname= 'Sm', folder= 'Sm3', maf= 0.025)
+Le_sm <- xtractLe(sm, setname= 'sm', folder= 'sm', maf= 0.025)
+
+Le_sM1 <- xtractLe(sMsub[[1]], setname= 'sM', folder= 'sM2', maf= 0.025)
+Le_sM3 <- xtractLe(sMsub[[3]], setname= 'sM', folder= 'sM2', maf= 0.025)
+Le_sM4 <- xtractLe(sMsub[[4]], setname= 'sM', folder= 'sM2', maf= 0.025)
+Le_sM5 <- xtractLe(sMsub[[5]], setname= 'sM', folder= 'sM2', maf= 0.025)
+Le_sM6 <- xtractLe(sMsub[[6]], setname= 'sM', folder= 'sM2', maf= 0.025)
+Le_sM7 <- xtractLe(sMsub[[7]], setname= 'sM', folder= 'sM2', maf= 0.025)
+Le_sM8 <- xtractLe(sMsub[[8]], setname= 'sM', folder= 'sM2', maf= 0.025)
+Le_sM9 <- xtractLe(sMsub[[9]], setname= 'sM', folder= 'sM2', maf= 0.025)
+
+
+
 
 
 
