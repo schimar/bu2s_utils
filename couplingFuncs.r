@@ -3,13 +3,15 @@
 library(rhdf5)
 #library(scales)
 library(ape)
+library(spatstat)
+
 
 # Barton 1983's coupling coefficient (theta = s/r)
 # Kruuk 1999's summed coupling coefficient (phi = (L-1)s/r) 
 # Le (effective nLoci)  (Le = s*/s)
 
 
-# calc r
+
 
 calcRecomb <- function(nLoci, map, nChrom= 4,...){
 	# calculate recombination rate from numberLoci, map, and number of chromosomes
@@ -622,7 +624,7 @@ xtractPhis <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/'
 	# function to read individual runs (from vector of runs), calculate CC and create new list (of length(data)) that contains phiObs and kphismax
 	#
 	runs <- list()
-	kphisMax <- list()
+	#kphisMax <- list()
 	for (i in 1:dim(data)[1]){
 		run <- data$run[i]
 		path5 <- paste('/runs/', run, sep= '')
@@ -649,22 +651,64 @@ xtractPhis <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/'
 }		
 # maybe write another function ('ccStats.2 abgespeckt') to calcPHIs and get afDiffs  (so it doesn't take as outlandischly long to get this...) 
 
+
+
+xtractLe <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/', maf= 25e-4, ...) {
+	# function to read individual runs (from vector of runs), calculate CC and create new list (of length(data)) that contains effMig, Le and gwcTime  
+	#
+	runs <- list()
+	#kphisMax <- list()
+	for (i in 1:dim(data)[1]){
+		run <- data$run[i]
+		path5 <- paste('/runs/', run, sep= '')
+		#
+		ccObjTmp <- readCCobjRude(run, setname, folder, path)
+		#ccTmp <- ccStats.2(data, ccObjTmp$fst, ccObjTmp$afts, ccObjTmp$LDsel, ccObjTmp$LDneut, ccObjTmp$effMig, run, maf= maf)
+		ccTmp <- ccStats.2(run= run, df= df, ccObj= ccObjTmp, maf= maf)
+		#ccTmp <- ccStats.2slim(run= run, df= df, ccObj= ccObjTmp, maf= maf)
+		#
+		#avgAFdiffS <- unlist(lapply(lapply(ccTmp$afDiffS, abs), mean))
+		#avgAFdiffN <- unlist(lapply(lapply(ccTmp$afDiffN, abs), mean))
+		#cWallS <- lapply(ccTmp$cWallS, unlist)
+		runs[[i]] <- list(ccTmp$sStarLeS, ccTmp$effMig, ccTmp$maxEffMigMeanS, ccTmp$gwcTimeMeanS, data$ts_sampling_frequency[i])   # 
+
+		names(runs)[i] <- run
+		names(runs[[i]]) <- c('sStarLeS', 'effMig', 'maxEffMigMeanS', 'tsFreq')
+		#phiObs[[i]] <- ccTmp$phiObs
+		#names(phiObs)[i] <- run
+		#kphisMax[[i]] <- ccTmp$kphisMax
+		#names(kphisMax)[i] <- run
+	}
+	#out <- list(phiObs, kphisMax)
+	#names(out) <- c('phiObs', 'kphisMax')
+	return(runs)
+}		
+
 #############################################
 
 		######## Moran's I ########
 
-calcMorI <- function(fstspl, ...) {
+calcMorIripK <- function(fstspl, windowLen= 5, ...) {
 # function to calculate Moran's I per generation and chromosome, with INPUT: fst data split by generation. 	
 	mIgenAll <- list()
-	
+	KgenAll <- list()
+	pointPatt <- list()
 	for (i in 1:length(fstspl)) {
 		cFst <- fstspl[[i]]
 		cChromSpl <- split(cFst, cFst$chromosomeMembership)
 		mIchrom <- as.data.frame(matrix(nrow= 4, ncol= 4, dimnames= list(seq(1, 4, 1), c('obs', 'exp', 'sd', 'pval'))))
+		k4chrom <- list()
+		ppchrom <- list()
 		for (j in 1:length(cChromSpl)) {
 			cChrom <- cChromSpl[[j]]
 			ctFst <- cChrom$Fst
 			ctMAP <- cChrom$MAP
+			# Ripley's K-function
+			pp <- ppp(ctMAP, rep(1, length(ctMAP)), window= owin(c(0, windowLen), c(0,1)))
+			ppchrom[[j]] <- pp
+			Kpp <- Kest(pp, correction= 'isotropic')
+			k4chrom[[j]] <- Kpp
+			# Moran's I
 			ctDists.inv <- 1/as.matrix(dist(ctMAP))
 			diag(ctDists.inv) <- 0
 			ctDists.inv[is.infinite(ctDists.inv)] <- 0
@@ -672,14 +716,17 @@ calcMorI <- function(fstspl, ...) {
 			mIchrom[j,] <- morI
 		}
 		mIgenAll[[i]] <- mIchrom
+		KgenAll[[i]] <- k4chrom
+		pointPatt[[i]] <- ppchrom
 	}
-	return(mIgenAll)
+	return(list(mIgenAll, KgenAll, pointPatt))
 }
 
 
 
 calcMorIbin <- function(fstspl, nbin= 5, ...) {
-	# function to calculate Moran's I per generation and chromosome and distance bin, with INPUT: fst data split by generation and the number of distance bins (default 5). The functiuon outputs a list containing the Moran's I nested list, and the bin affiliation for each generation/chromosome/locus. 
+	# function to calculate Moran's I per generation and chromosome and distance bin
+	# INPUT: fst data split by generation and the number of distance bins (default 5). The functiuon outputs a list containing the Moran's I nested list, and the bin affiliation for each generation/chromosome/locus. 
 	mIgen <- list()
 	grouplist <- list()
 	for (i in 1:length(fstspl)) {
@@ -785,13 +832,56 @@ plotFstMAPmorIbin <- function(fstspl, morIbin, time= 1, static= F, wait= 0.1, ..
 }
 
 
+plotFstMAPripKmorIbin <- function(fstspl, morIbin, mIKgen, time= 1, static= F, wait= 0.1, ...) {
+	# function to plot both the MAP vs Fst, Ripley's K-function (with envelope)  and Moran's I per generation, chromosome and distance bin
+	# INPUT: fst data split by nGen, nested list of Moran's I values (per gen, chrom and bin) and the generation time to start the loop (with nGen/tsFreq).
+
+	close.screen(all.screens= T)
+	par(bg = "white") # erase.screen() will appear not to work if the background color is transparent 
+	split.screen(c(3,4))  
+
+	for (i in time:length(fstspl)) {
+		chrom <- fstspl[[i]]$chromosomeMembership
+		cGmI <- mIKgen[[1]][[i]]
+		cGpp <- mIKgen[[3]][[i]]
+		cGmIbin <- mIbin[[1]][[i]]
+		for (j in 1:length(cGpp)) {
+			cCpp <- cGpp[[j]]
+			cMorI <- cGmIbin[[j]]
+			screen(j)
+			cChrom <- fstspl[[i]][which(chrom == unique(chrom)[j]),]
+			plot(cChrom$MAP, cChrom$Fst, col= as.factor(cChrom$locType), xlim= c(0, 25), ylim= c(0,1), main= paste('chrom ', j-1, ' gen = ', i), ylab= 'Fst', xlab= 'map', pch= 20)
+			lines(cChrom$MAP, cChrom$Fst, col= 'grey70')
+			screen(j+4)
+			plot(envelope(cCpp, Kest, correction= 'isotropic'), main= paste('chrom', j-1))
+			# 
+			screen(j+8)
+			barx <- barplot(cMorI$obs, ylim= c(-1, 1), pch= 20, main= paste("Moran's I, gen = ", i), names.arg= c(1,2,3,4,5), ylab= "Moran's I", xlab= 'distance bins')  
+			sdI <- cMorI$sd
+			sdI[which(sdI == Inf)] <- NA
+			sdI[which(sdI == NaN)] <- NA
+			error.bar(barx, cMorI$obs, sdI)
+		}
+		Sys.sleep(wait)
+		if (static == T) {
+				break
+		}
+	}
+}
 
 
-plotMorI <- function(mIgenAll, time= 1) {
+plotMorIripK <- function(mIKgenAll, time= 1) {
 	# function to plot the single Moran's I values per generation and chromosome 
 	# INPUT: output of calcMorI() and the generation time to start the loop (with nGen/tsFreq)
+	close.screen(all.screens= T)
+
+	par(bg = "white") # erase.screen() will appear not to work if the background color is transparent 
+	split.screen(c(2,4))  
+
+
 	for (i in time:length(mIgenAll)) {
-		cMorIall <- mIgenAll[[i]]
+		cMorIall <- mIKgenAll[[1]][[i]]
+		ripKall <- mIKgenAll[[2]][[i]]
 		barx <- barplot(cMorIall$obs, ylim= c(-1, 1), pch= 20, main= paste('Morans I; gen = ', i), names.arg= c(0,1,2,3), xlab= 'chromosome', ylab= "Moran's I")
 		#lines(cMorIall$obs, col= 'grey70')
 		error.bar(barx, cMorIall$obs, cMorIall$sd)

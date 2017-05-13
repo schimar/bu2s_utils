@@ -107,7 +107,7 @@ Sm[which(Sm$run == 'Run203006'),which(dfVar != 0)]
 
 # Sm 
 # phis_Sm <- xtractPhis(Sm, 'Sm', maf= 0.025)
-phis_Sm <- xtractPhis(Sm, 'Sm3', 'Sm', maf= 0.025)
+phis_Sm <- xtractPhis(Sm, setname= 'Sm', folder= 'Sm3', maf= 0.025)
 
 # sm 
 phis_sm <- xtractPhis(sm, 'sm', 'sm', maf= 0.025)		#path= '/media/schimar/FLAXMAN/h5/', 
@@ -115,22 +115,20 @@ phis_sm <- xtractPhis(sm, 'sm', 'sm', maf= 0.025)		#path= '/media/schimar/FLAXMA
 
 
 # sM
-phis_sM <- xtractPhis(sM, 'sM2', 'sM', maf= 0.025)
-phis_sM <- xtractPhis(sM, setname= 'sM', folder= 'sM', maf= 0.025)
+phis_sM <- xtractPhis(sM, setname= 'sM', folder= 'sM2', maf= 0.025)
 
+# running on ruderalis as "phisM"
+# resume with: screen -r phisM
 
-#phis_sM1 <- xtractPhis(sMsub[[1]], 'sM', maf= 0.025)
-phis_sM2 <- xtractPhis(sMsub[[2]], 'sM', maf= 0.025)
-
-phis_sM3 <- xtractPhis(sMsub[[3]], 'sM', maf= 0.025)
-
-
-phis_sM4 <- xtractPhis(sMsub[[4]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
-phis_sM5 <- xtractPhis(sMsub[[5]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
-phis_sM6 <- xtractPhis(sMsub[[6]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
-phis_sM7 <- xtractPhis(sMsub[[7]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
-phis_sM8 <- xtractPhis(sMsub[[8]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
-phis_sM9 <- xtractPhis(sMsub[[9]], 'sM', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+phis_sM1 <- xtractPhis(sMsub[[1]], setname= 'sM', folder= 'sM2', maf= 0.025)
+#### phis_sM2 <- xtractPhis(sMsub[[2]], setname= 'sM', folder= 'sM2', maf= 0.025)
+phis_sM3 <- xtractPhis(sMsub[[3]], setname= 'sM', folder= 'sM2', maf= 0.025)
+phis_sM4 <- xtractPhis(sMsub[[4]], setname= 'sM', folder= 'sM2', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+phis_sM5 <- xtractPhis(sMsub[[5]], setname= 'sM', folder= 'sM2', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+phis_sM6 <- xtractPhis(sMsub[[6]], setname= 'sM', folder= 'sM2', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+phis_sM7 <- xtractPhis(sMsub[[7]], setname= 'sM', folder= 'sM2', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+phis_sM8 <- xtractPhis(sMsub[[8]], setname= 'sM', folder= 'sM2', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
+phis_sM9 <- xtractPhis(sMsub[[9]], setname= 'sM', folder= 'sM2', maf= 0.025) 		# path= '/media/schimar/schimar2/bu2s/h5/' 
 
 
 
@@ -138,9 +136,12 @@ phis_sM9 <- xtractPhis(sMsub[[9]], 'sM', maf= 0.025) 		# path= '/media/schimar/s
 
 
 # load the .RData for PHIs 
-names(phis_sm[[i]]) <- c('phiObs', 'kphisMax', 'afDiffS', 'afDiffN') # for sm, Sm, sM1 & sM2: forgot the afDiffs
 
-load('PHIs/sm/.RData')
+load('../sm/.RData')
+load('../S_m/.RData')
+load('../sM/.RData')
+
+
 
 
 # plot phis & afDiffS
@@ -171,7 +172,44 @@ for (i in 1:length(phis_sM)) {
 }
 
 
+plotPhis <- function(phis, ...) {
+	plot(log10(phis[[1]]$kphisMax), phis[[1]]$pHatsMax, type= 'l', ylim= c(-0.45,  1), xlim= c(-2, max(log10(phis[[1]]$kphisMax))), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])), col= 'black')
+	legend('bottomright', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'red', 'blue'), cex= 0.8)
+	#
+	for (i in 1:length(phis)) {
+		phiGen <- phis[[i]]
+		cWallS <- phiGen$cWallS
+		phiOncW <- mapply(rep, phiGen$phiObs, times= unlist(lapply(cWallS, length)))
+		# 
+		points(log10(phis[[1]]$kphisMax), phis[[1]]$pHatsMax, type= 'l')
+		points(log10(unlist(phiOncW)), unlist(cWallS), pch= '.', col= 'grey70') #type= 'l')
+		points(log10(unlist(phiGen$phiObs)), unlist(lapply(lapply(phiGen$afDiffS, abs), mean)), pch= '.', cex= 1.4, col= 'red')
+		points(log10(unlist(phiGen$phiObs)), unlist(lapply(lapply(phiGen$afDiffN, abs), mean)), pch= '.', cex= 1.4, col= 'blue')
+			}
+}
 
+# this is ok, but I should rather pull out the overall stats (mean & sd for phis across runs) 
+
+
+
+dev.new()
+
+par(mfrow= c(4,4))
+plotPhis(phis_Sm[1:800])
+plotPhis(phis_Sm[801:1600])
+plotPhis(phis_sm[1:800])
+plotPhis(phis_sm[801:1600])
+plotPhis(phis_sm[1601:2400])
+
+plotPhis(phis_sM1)
+
+plotPhis(phis_sM3)
+plotPhis(phis_sM4)
+plotPhis(phis_sM5)
+plotPhis(phis_sM6)
+plotPhis(phis_sM7)
+plotPhis(phis_sM8)
+plotPhis(phis_sM9)
 
 ####
 # Sm
@@ -194,6 +232,36 @@ for (i in 1:length(phis_Sm)) {
 
 
 
+
+
+###
+plot(log10(phis_Sm[[801]]$phiObs), type= 'n')
+
+for (i in 801:1599) {
+	points(log10(phis_Sm[[i]]$phiObs), type= 'l', col= 'grey70')
+	#points(log10(phis_Sm[[i]]$kphisMax), type= 'l', col= 'grey70')
+}
+
+
+##
+plot(log10(phis_sm[[1]]$phiObs), type= 'n')
+
+for (i in 1601:2400) {
+	points(log10(phis_sm[[i]]$phiObs), type= 'l') #, col= 'grey70')
+	#points(log10(phis_Sm[[i]]$kphisMax), type= 'l', col= 'grey70')
+}
+
+
+plot(log10(phis_sM5[[1]]$phiObs), type= 'n')
+
+for (i in 1:800) {
+	points(log10(phis_sM6[[i]]$phiObs), type= 'l', col= 'grey70')
+	#points(log10(phis_Sm[[i]]$kphisMax), type= 'l', col= 'grey70')
+}
+
+
+
+
 #paste(pathTmp, set, "/afts_", set, 'T.h5', sep= '')
 
 ###########################################################################################################################
@@ -203,13 +271,15 @@ for (i in 1:length(phis_Sm)) {
 
 # c500 <- readIn('Run215499', df, 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
 
-# plot(unlist(lapply(r499$afDiffS, mean)), type= 'l', col= 'red', cex= 1.5, ylim= c(-0.15, 0.18))
-# abline(h= 0, lty= 3)
-# points(unlist(lapply(r499$afDiffN, mean)), type= 'l', col= 'blue', cex= 1.5)
-
 cc500 <- readCCobj('Run215500', 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
-
 s500 <- ccStats.2('Run215500', df, cc500, maf= 0.025)
+
+
+# on ruderalis
+
+cc500 <- readCCobjRude('Run215500', smParam= 'sM', folder= 'sM2', path= '/media/schimar/FLAXMAN/h5/')
+s500 <- ccStats.2('Run215500', df, cc500, maf= 0.025)
+
 
 
 #slim500 <- ccStats.2slim('Run215500', df, cc500, maf= 0.025)
@@ -220,18 +290,18 @@ s500 <- ccStats.2('Run215500', df, cc500, maf= 0.025)
 #rcT <- ccStats(df, ccT$fst, ccT$afts, ccT$LDsel, ccT$LDneut, ccT$effMig, 'Run206976', maf= 0.0)
 #
 ## Run206976 (run with ts_sampling_freq = 194) 
-ccT578 <- readCCobj('Run209578', 'Sm', path= '/media/schimar/schimar2/bu2s/h5/')
-rcT578 <- ccStats.2('Run209578', df, ccT578, maf= 0.025)
-
-ccT577 <- readCCobj('Run209577', 'Sm', path= '/media/schimar/schimar2/bu2s/h5/')
-rcT577 <- ccStats.2('Run209577', df, ccT577, maf= 0.025)
-
-cc203124 <- readCCobj('Run203124', 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
-rc203124 <- ccStats.2('Run203124', df, cc203124, maf= 0.025)
-
-# in sm
-cc209425 <- readCCobj('Run209425', 'sm', path= '/media/schimar/schimar2/bu2s/h5/')
-rc209425 <- ccStats.2('Run209425', df, cc209425, maf= 0.025)
+##ccT578 <- readCCobj('Run209578', 'Sm', path= '/media/schimar/schimar2/bu2s/h5/')
+##rcT578 <- ccStats.2('Run209578', df, ccT578, maf= 0.025)
+##
+##ccT577 <- readCCobj('Run209577', 'Sm', path= '/media/schimar/schimar2/bu2s/h5/')
+##rcT577 <- ccStats.2('Run209577', df, ccT577, maf= 0.025)
+##
+##cc203124 <- readCCobj('Run203124', 'sM', path= '/media/schimar/schimar2/bu2s/h5/')
+##rc203124 <- ccStats.2('Run203124', df, cc203124, maf= 0.025)
+##
+### in sm
+##cc209425 <- readCCobj('Run209425', 'sm', path= '/media/schimar/schimar2/bu2s/h5/')
+##rc209425 <- ccStats.2('Run209425', df, cc209425, maf= 0.025)
 
 
 #lapply(list.df, function(x)x[x$B!=2,])
@@ -244,79 +314,58 @@ aftsSpl <- split(afts, afts$nGen)
 
 ####
 # plot MAP ~ Fst    (& dXY, LD, etc.)    NOTE:  not by chromosome !!
-
-for(i in 600:length(fstspl)) {
-	plot(fstspl[[i]]$MAP, fstspl[[i]]$Fst, col= as.factor(fstspl[[i]]$locType), ylim= c(0,1), main= paste('gen = ', i), ylab= 'Fst', xlab= 'map', pch= 20)
-	Sys.sleep(0.7)
-}
-
-
-par(mfrow= c(1,4))
-# color in the chromosomes (or separate in some other way) 
-for(i in 600:length(fstSpl)) {
-	chrom <- fstSpl[[i]]$chromosomeMembership
-	for (j in 1:length(unique(chrom))) {
-		cChrom <- fstSpl[[i]][which(chrom == unique(chrom)[j]),]
-		plot(cChrom$MAP, cChrom$Fst, col= as.factor(cChrom$locType), xlim= c(0, 25), ylim= c(0,1), main= paste('chrom ', j-1, ' gen = ', i), ylab= 'Fst', xlab= 'map', pch= 20)
-		lines(cChrom$MAP, cChrom$Fst, col= 'grey70')
-		}
-	Sys.sleep(0.4)
-
-}
-
 #####################################################
 
 ##### spatial autocorrelation 
 
-# Moran's I 
-
-# for each chromosome:
-
-# get distances between loci 
-
-
-# moran.test(
-
-
-# split fst by gen, and by chrom 
-
-# chromosomeMembership in fstspl
-#chromLst <- lapply(fstspl, '[[', 7)
-
-#lapply(fstspl, split, f= chromLst)
-# hm, this takes forever...
-
-#frst <- fst[1:23,]
-#dists <- dist(frst$MAP)
-#dists.inv <- 1/dists
-#
-#hc <- hclust(dists, method="ward.D")
-#ct <- cutree(hc, k= 5)
-
 ###ct <- cut(frst$MAP, quantile(frst$MAP, probs = seq(0, 1, by = 1/5)), right= F, labels= 1:5, include.lowest= T)
 
 ##################################################### calc Moran's I for distance bins  (5)
-##############################################
+
 # calc Moran's I per chromosome (no distance bins within) 
-mIgen <- calcMorI(fstSpl)
+mIKgen <- calcMorIripK(fstSpl)
 
 # now with distance bins (k = 5)
 mIbin <- calcMorIbin(fstSpl)
 
 #### NOTE:    need a wrapper for that stuff (with readCCobj) ???? 
 
+# include Ripley's K into calcMorIbin
+
+
+# plot Ripley's K    (isotropic correction, w/ 99 simulations of CSR (default "envelope()  ))
+	
+plotFstMAPripKmorIbin(fstSpl, mIbin, mIKgen, static= F, wait= 0.8, time= 600)
+
+
+#plot(envelope(xpp, Kest))
+
+# from ?Kest 
+
+# 	   The estimates of K(r) are of the form
+
+#           Kest(r) = (a/(n * (n-1))) * sum[i,j] I(d[i,j] <= r) e[i,j])   
+#      
+#      where a is the area of the window, n is the number of data points,
+#      and the sum is taken over all ordered pairs of points i and j in
+#      ‘X’.  Here d[i,j] is the distance between the two points, and
+#      I(d[i,j] <= r) is the indicator that equals 1 if the distance is
+#      less than or equal to r.  The term e[i,j] is the edge correction
+#      weight (which depends on the choice of edge correction listed
+#      above).
+
+
 
 ##############################################
 # plot the Moran's I values 
-plotFstMAPmorIbin(fstSpl, mIbin[[1]], time= 620)
+plotFstMAPmorIbin(fstSpl, mIbin, static= F, time= 620)
 
 #plotMorIbin(mIgen, time= 630)
 
 plotMorI(mIgen, time= 600)
 
 
-
-
+plotDyna(s500, mIgen, static= F, time= 1)
 
 
 
@@ -337,7 +386,7 @@ arrows(x,y+upper, x, y-lower, angle=90, code=3, length=length, ...)
 ##############################################
 
 # not done yet; how to arrange the plot ??
-
+# NOTE: see plotDyna()
 plotFstMAPmorI <- function(fstspl, morI, time= 1,...) {
 	# function to plot both the MAP vs Fst and Moran's I and Moran's I per generation and chromosome
 	# with INPUT: fst data split by nGen, the nested list of Moran's I values (per gen and chrom) and the generation time to start the loop (with nGen/tsFreq).
