@@ -150,16 +150,68 @@ Le_sM9 <- xtractLe(sMsub[[9]], setname= 'sM', folder= 'sM2', maf= 0.025)
 
 
 
+plot(Le_Sm[[1]]$sStarLeS$Le, type= 'n', ylim= c(-50, 10))
+
+for (i in 1:length(Le_Sm)) {
+	points(Le_Sm[[i]]$sStarLeS$Le, type= 'l')
+}
+
+
+# Sm
+LeSm <- lapply(lapply(Le_Sm, '[[', 1), '[[', 2)
+
+minSm <- unlist(lapply(LeSm, min, na.rm= T))
+
+# sm
+
+Lesm <- lapply(lapply(Le_sm, '[[', 1), '[[', 2)
+
+minsm <- unlist(lapply(Lesm, min, na.rm= T))
+
+
+# sM
+
+LesM1 <- lapply(lapply(Le_sM1, '[[', 1), '[[', 2)
+minsM1 <- unlist(lapply(LesM1, min, na.rm= T))
+
+LesM3 <- lapply(lapply(Le_sM3, '[[', 1), '[[', 2)
+minsM3 <- unlist(lapply(LesM3, min, na.rm= T))
+
+LesM4 <- lapply(lapply(Le_sM4, '[[', 1), '[[', 2)
+minsM4 <- unlist(lapply(LesM4, min, na.rm= T))
+
+LesM5 <- lapply(lapply(Le_sM5, '[[', 1), '[[', 2)
+minsM5 <- unlist(lapply(LesM5, min, na.rm= T))
+
+LesM6 <- lapply(lapply(Le_sM6, '[[', 1), '[[', 2)
+minsM6 <- unlist(lapply(LesM6, min, na.rm= T))
+
+LesM7 <- lapply(lapply(Le_sM7, '[[', 1), '[[', 2)
+minsM7 <- unlist(lapply(LesM7, min, na.rm= T))
+
+LesM8 <- lapply(lapply(Le_sM8, '[[', 1), '[[', 2)
+minsM8 <- unlist(lapply(LesM8, min, na.rm= T))
+
+LesM9 <- lapply(lapply(Le_sM9, '[[', 1), '[[', 2)
+minsM9 <- unlist(lapply(LesM9, min, na.rm= T))
+
+minsM <- c(minsM1, minsM3, minsM4, minsM5, minsM6, minsM7, minsM8, minsM9)
+
+# 
+par(mfrow= c(1,3))
+
+plot(minSm, type= 'l', main= 'Sm')
+plot(minsm, type= 'l', main= 'sm')
+plot(minsM, type= 'l', main= 'sM')
 
 
 
 
 # load the .RData for PHIs 
 
-load('../sm/.RData')
-load('../S_m/.RData')
-load('../sM/.RData')
-
+load('~/schimar/bu2s/runs/PHIs/sm/.RData')
+load('~/schimar/bu2s/runs/PHIs/S_m/.RData')
+load('~/schimar/bu2s/runs/PHIs/sM/.RData')
 
 
 
