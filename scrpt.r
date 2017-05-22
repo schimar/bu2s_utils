@@ -13,10 +13,15 @@
 
 
 # on ruderalis:
-source('~/schimar/bu2s/bu2s_utils/couplingFuncs.r'
+source('~/schimar/bu2s/bu2s_utils/couplingFuncs.r')
 df  <- read.table("~/schimar/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
 names(df) <- tolower(names(df))
 
+load("~/schimar/bu2s/runs/Le/.RData")
+load("~/schimar/bu2s/runs/LD/.RData")
+load("~/schimar/bu2s/runs/PHIs/sm/.RData")
+load("~/schimar/bu2s/runs/PHIs/sM/.RData")
+load("~/schimar/bu2s/runs/PHIs/S_m/.RData")
 
 #### pandapeter 
 
@@ -26,7 +31,7 @@ df <- read.table("~/flaxmans/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
 names(df) <- tolower(names(df))
 
 
-#########################    SUBSETS 
+#########################    simple SUBSETS 
 # s > m  (1600 runs)
 Sm <- df[which(df$sd_move < df$mean_s),]
 Sm <- Sm[which(Sm$run != 'Run209578'),]      # something's up with dim of LDsel in this run... exclude!)
@@ -88,16 +93,16 @@ plotStatic.1(r499, 'Run215500', df)
 #paramSub <- df[df$run %in% rs,]
 paths <-  '/media/schimar/schimar2/bu2s/h5/'
 
+
 paramSub <- sMsub[[2]][1:10,]
-wrapH5(paramSub, 'sM', path= paths)
+wrapH5static(paramSub, 'sM', path= paths)
 
-wrapH5(Sm[1:100,], 'Sm')
+wrapH5static(Sm[1:100,], 'Sm')
 
 
-wrapH5(paramSub, 'Sm')
+wrapH5static(paramSub, 'Sm')
 
-wrapH5(smSub[[1]], 'sm')
-
+wrapH5static(smSub[[1]], 'sm')
 
 
 
@@ -150,16 +155,10 @@ Le_sM9 <- xtractLe(sMsub[[9]], setname= 'sM', folder= 'sM2', maf= 0.025)
 
 
 
-plot(Le_Sm[[1]]$sStarLeS$Le, type= 'n', ylim= c(-50, 10))
-
-for (i in 1:length(Le_Sm)) {
-	points(Le_Sm[[i]]$sStarLeS$Le, type= 'l')
-}
-
 
 # Sm
 LeSm <- lapply(lapply(Le_Sm, '[[', 1), '[[', 2)
-
+#sStSm <- lapply(lapply(Le_Sm, '[[', 1), '[[', 1)
 minSm <- unlist(lapply(LeSm, min, na.rm= T))
 
 # sm
@@ -200,12 +199,79 @@ minsM <- c(minsM1, minsM3, minsM4, minsM5, minsM6, minsM7, minsM8, minsM9)
 # 
 par(mfrow= c(1,3))
 
-plot(minSm, type= 'l', main= 'Sm')
+plot(minSm,  type= 'l', main= 'Sm')
 plot(minsm, type= 'l', main= 'sm')
 plot(minsM, type= 'l', main= 'sM')
 
+plot(minSm, type= 'l', main= 'Sm')
+plot(minsm, type= 'l', main= 'sm')
+plot(minsM[which(sM$mutation_distribution == 0)], type= 'l', main= 'sM')
 
 
+LesmPallo <- Lesm[which(sm$end_period_allopatry != -1)]
+LDsmPallo <- LDsm[which(sm$end_period_allopatry != -1)]
+
+
+plot(LesmPallo[[751]], LDsmPallo[[751]]$LDneut[,4], xlim= c(-200, 10), ylim= c(0,1), type= 'n')
+for (i in 751:length(LesmPallo)) {
+	cLe <- LesmPallo[[i]]
+	cLDn <- LDsmPallo[[i]]$LDneut[,4]
+	cLDs <- LDsmPallo[[i]]$LDsel[,4]
+	points(cLe, cLDs, type= 'l', col= 'red')
+	points(cLe, cLDn, type= 'l', col= 'blue')
+}
+
+
+
+LeSmPallo <- LeSm[which(Sm$end_period_allopatry != -1)]
+LDSmPallo <- LDSm[which(Sm$end_period_allopatry != -1)]
+
+
+plot(LeSmPallo[[751]], LDSmPallo[[751]]$LDneut[,4], xlim= c(-200, 10), ylim= c(0,1), type= 'n')
+for (i in 751:length(LeSmPallo)) {
+	cLe <- LeSmPallo[[i]]
+	cLDn <- LDSmPallo[[i]]$LDneut[,4]
+	cLDs <- LDSmPallo[[i]]$LDsel[,4]
+	points(cLe, cLDs, type= 'l', col= 'red')
+	points(cLe, cLDn, type= 'l', col= 'blue')
+}
+
+
+LesMPallo <- LesM[which(sM$end_period_allopatry != -1)]
+LDsMPallo <- LDsM[which(sM$end_period_allopatry != -1)]
+
+
+plot(LesMPallo[[751]], LDsMPallo[[751]]$LDneut[,4], xlim= c(-200, 10), ylim= c(0,1), type= 'n')
+for (i in 751:length(LesMPallo)) {
+	cLe <- LesmPallo[[i]]
+	cLDn <- LDsmPallo[[i]]$LDneut[,4]
+	cLDs <- LDsmPallo[[i]]$LDsel[,4]
+	points(cLe, cLDs, type= 'l', col= 'red')
+	points(cLe, cLDn, type= 'l', col= 'blue')
+}
+
+
+#################################
+# extract LD for each set of runs
+
+LDSm <- xtractLD(Sm, setname= 'Sm', folder= 'Sm3')
+LDsm <- xtractLD(sm, setname= 'sm', folder= 'sm')
+
+LD_sM1 <- xtractLD(sMsub[[1]], setname= 'sM', folder= 'sM2')
+LD_sM3 <- xtractLD(sMsub[[3]], setname= 'sM', folder= 'sM2')
+LD_sM4 <- xtractLD(sMsub[[4]], setname= 'sM', folder= 'sM2')
+LD_sM5 <- xtractLD(sMsub[[5]], setname= 'sM', folder= 'sM2')
+LD_sM6 <- xtractLD(sMsub[[6]], setname= 'sM', folder= 'sM2')
+LD_sM7 <- xtractLD(sMsub[[7]], setname= 'sM', folder= 'sM2')
+LD_sM8 <- xtractLD(sMsub[[8]], setname= 'sM', folder= 'sM2')
+LD_sM9 <- xtractLD(sMsub[[9]], setname= 'sM', folder= 'sM2')
+
+
+
+plot(Lesm[[801]], LDsm[[801]]$LDsel[,4], type= 'n', xlim= c(-462, 10))
+for (i in 801:1599) {
+	points(Lesm[[i]], LDsm[[i]]$LDsel[,4], type= 'l')
+}
 
 # load the .RData for PHIs 
 
@@ -371,8 +437,10 @@ s500 <- ccStats.2('Run215500', df, cc500, maf= 0.025)
 ##rc203124 <- ccStats.2('Run203124', df, cc203124, maf= 0.025)
 ##
 ### in sm
-##cc209425 <- readCCobj('Run209425', 'sm', path= '/media/schimar/schimar2/bu2s/h5/')
-##rc209425 <- ccStats.2('Run209425', df, cc209425, maf= 0.025)
+##
+cc207575 <- readCCobj('Run207575', 'sm', path= '/media/schimar/schimar2/bu2s/h5/')
+##
+rc207575 <- ccStats.2('Run207575', df, cc207575, maf= 0.025)
 
 
 #lapply(list.df, function(x)x[x$B!=2,])
@@ -401,13 +469,19 @@ mIbin <- calcMorIbin(fstSpl)
 
 #### NOTE:    need a wrapper for that stuff (with readCCobj) ???? 
 
-# include Ripley's K into calcMorIbin
+ 
+
+wrapH5dynaGen(sm, 'sm', time= 80)
+wrapH5dynaGen(sm[which(sm$end_period_allopatry != -1),], 'sm')
+
+wrapH5dynaBin(sm[801:1600,], 'sm', time= 1)
+
+wrapH5FstMAPmIgen(sm, 'sm', time= 1)
 
 
 # plot Ripley's K    (isotropic correction, w/ 99 simulations of CSR (default "envelope()  ))
 	
 plotFstMAPripKmorIbin(fstSpl, mIbin, mIKgen, static= F, wait= 0.8, time= 600)
-
 
 #plot(envelope(xpp, Kest))
 
@@ -431,6 +505,8 @@ plotFstMAPripKmorIbin(fstSpl, mIbin, mIKgen, static= F, wait= 0.8, time= 600)
 # plot the Moran's I values 
 plotFstMAPmorIbin(fstSpl, mIbin, static= F, time= 620)
 
+
+plotFstMAPmorIgen(fstSpl, mIKgen, static= F, time= 1)
 #plotMorIbin(mIgen, time= 630)
 
 plotMorI(mIgen, time= 600)
