@@ -467,9 +467,23 @@ mIKgen <- calcMorIripK(fstSpl)
 # now with distance bins (k = 5)
 mIbin <- calcMorIbin(fstSpl)
 
-#### NOTE:    need a wrapper for that stuff (with readCCobj) ???? 
+IKSm <- xtractIK(Sm, setname= 'Sm', folder= 'Sm3')
+IKsm <- xtractIK(sm, setname= 'sm', folder= 'sm')
 
- 
+IK_sM1 <- xtractIK(sMsub[[1]], setname= 'sM', folder= 'sM2')
+IK_sM3 <- xtractIK(sMsub[[3]], setname= 'sM', folder= 'sM2')
+IK_sM4 <- xtractIK(sMsub[[4]], setname= 'sM', folder= 'sM2')
+IK_sM5 <- xtractIK(sMsub[[5]], setname= 'sM', folder= 'sM2')
+IK_sM6 <- xtractIK(sMsub[[6]], setname= 'sM', folder= 'sM2')
+IK_sM7 <- xtractIK(sMsub[[7]], setname= 'sM', folder= 'sM2')
+IK_sM8 <- xtractIK(sMsub[[8]], setname= 'sM', folder= 'sM2')
+IK_sM9 <- xtractIK(sMsub[[9]], setname= 'sM', folder= 'sM2')
+
+
+
+
+
+#### various wrapper functions  
 
 wrapH5dynaGen(sm, 'sm', time= 80)
 wrapH5dynaGen(sm[which(sm$end_period_allopatry != -1),], 'sm')
