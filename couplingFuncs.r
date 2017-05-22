@@ -777,7 +777,7 @@ xtractLD <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/', 
 }		
 
 
-xtractIK <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/', maf= 25e-4, ...) {
+xtractIK <- function(data, setname, folder, path= '/home/schimar/FLAXMAN/h5/', maf= 25e-4, ...) {
 	# function to read individual runs (from vector of runs), calculate CC and create new list (of length(data)) that contains effMig, Le and gwcTime  
 	#
 	runs <- list()
