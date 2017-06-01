@@ -726,7 +726,7 @@ xtractPhis <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/'
 # maybe write another function ('ccStats.2 abgespeckt') to calcPHIs and get afDiffs  (so it doesn't take as outlandischly long to get this...) 
 
 phi2ggplot <- function(phis, ...) {
-
+	# function to get the output for ggplot2 plots from the output of xtractPhis
 	kps <- unlist(lapply(phis, '[[', 2))
 	pHs <- unlist(lapply(phis, '[[', 3))
 	
