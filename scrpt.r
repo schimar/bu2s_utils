@@ -17,11 +17,6 @@ source('~/schimar/bu2s/bu2s_utils/couplingFuncs.r')
 df  <- read.table("~/schimar/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
 names(df) <- tolower(names(df))
 
-load("~/schimar/bu2s/runs/Le/.RData")
-load("~/schimar/bu2s/runs/LD/.RData")
-load("~/schimar/bu2s/runs/PHIs/sm/.RData")
-load("~/schimar/bu2s/runs/PHIs/sM/.RData")
-load("~/schimar/bu2s/runs/PHIs/S_m/.RData")
 
 #### pandapeter 
 
@@ -104,9 +99,12 @@ wrapH5static(paramSub, 'Sm')
 
 wrapH5static(smSub[[1]], 'sm')
 
+smSym <- sm[801:2400,][which(sm[801:2400,]$end_period_allopatry == -1),]
+wrapH5static(smSym, 'sm', path= paths)
 
 
-Sm[which(Sm$run == 'Run203006'),which(dfVar != 0)]
+
+#Sm[which(Sm$run == 'Run203006'),which(dfVar != 0)]
 
 
 
@@ -275,9 +273,16 @@ for (i in 801:1599) {
 
 # load the .RData for PHIs 
 
-load('~/schimar/bu2s/runs/PHIs/sm/.RData')
-load('~/schimar/bu2s/runs/PHIs/S_m/.RData')
-load('~/schimar/bu2s/runs/PHIs/sM/.RData')
+load('~/flaxmans/bu2s/runs/PHIs/sm/.RData')
+load('~/flaxmans/bu2s/runs/PHIs/S_m/.RData')
+load('~/flaxmans/bu2s/runs/PHIs/sM/.RData')
+
+# on ruderalis
+load("~/schimar/bu2s/runs/Le/.RData")
+load("~/schimar/bu2s/runs/LD/.RData")
+load("~/schimar/bu2s/runs/PHIs/sm/.RData")
+load("~/schimar/bu2s/runs/PHIs/sM/.RData")
+load("~/schimar/bu2s/runs/PHIs/S_m/.RData")
 
 
 
@@ -348,6 +353,146 @@ plotPhis(phis_sM7)
 plotPhis(phis_sM8)
 plotPhis(phis_sM9)
 
+
+
+
+#for (i in length(phis_Sm)) {
+	
+############################ 
+# plot sets of phis with ggplot2
+
+
+kps <- unlist(lapply(phis_Sm[801:1599], '[[', 2))
+pHs <- unlist(lapply(phis_Sm[801:1599], '[[', 3))
+
+phO <- unlist(lapply(phis_Sm[801:1599], '[[', 1))
+pN <- unlist(lapply(phis_Sm[801:1599], '[[', 5))
+pS <- unlist(lapply(phis_Sm[801:1599], '[[', 4))
+
+cWs <- unlist(lapply(phis_Sm[801:1599], '[[', 6))
+#
+
+
+# create matrices with runs as rows and generations as columns
+#kphis <- do.call(rbind, lapply(phis_Sm, '[[', 2))
+#pHatsMax <- do.call(rbind, lapply(phis_Sm, '[[', 3))
+#afDn <- do.call(rbind, lapply(phis_Sm, '[[', 5))
+#afDs <- do.call(rbind, lapply(phis_Sm, '[[', 4))
+#phiObs <- do.call(rbind, lapply(phis_Sm, '[[', 1))
+#cWallS  <- do.call(rbind, lapply(phis_Sm, '[[', 6))
+#
+#
+#kpHat <- as.data.frame(cbind(log10(apply(kphis[801:1599,], 2, mean, na.rm= T)), apply(pHatsMax[801:1599,], 2, mean, na.rm= T)))
+#names(kpHat) <- c('kphisMax', 'pHatsMax')
+
+##################
+#ggplot(dat, aes(x=pos,y=value, colour=type)) +
+#  stat_smooth(method="loess", span=0.1, se=TRUE, aes(fill=type), alpha=0.3) +
+#  theme_bw()
+
+#ggplot(kpHat, aes(x= kphisMax, y= pHatsMax)) + geom_line(size= 1) + theme_bw() + coord_cartesian(ylim= c(0, 1))
+#+ geom_line() 
+
+##
+
+# get the 'phiOncW' for selected and neutral afDiffs
+phiOncW <- list()
+for (i in 1:length(phis_Sm[801:1599])) {
+	k <- i + 800
+	phiOncW[[i]] <- mapply(rep, phis_Sm[[k]]$phiObs, times= unlist(lapply(phis_Sm[[k]]$cWallS, length)))
+}
+# flatten 
+pcWallS <- unlist(lapply(phiOncW, unlist))
+
+
+##
+
+### cbind phi and ps 
+# kruuk: 
+# 		(kps_pHs)
+kps_pHs <- as.data.frame(cbind(log10(kps), pHs, rep('C', length(kps))))
+names(kps_pHs) <- c('phi', 'p', 'group')
+
+
+# observed phis ~ avgAFdiff(S|N) 
+phiOAFd <- as.data.frame(cbind(phO, pN, pS))
+names(phiOAFd) <- c('phiObs', 'pN', 'pS')
+
+Sphi <- as.data.frame(cbind(as.numeric(log10(phiOAFd$phiObs)), as.numeric(phiOAFd$pS), rep('A', length(phiOAFd$pS))))	
+names(Sphi) <- c('phi', 'p', 'group')
+Nphi <- as.data.frame(cbind(as.numeric(log10(phiOAFd$phiObs)), as.numeric(phiOAFd$pN), rep('B', length(phiOAFd$pS))))	
+names(Nphi) <- c('phi', 'p', 'group')
+# obsPHI <- rbind(Sphi, Nphi)
+
+# expectations based on per-locus s:
+allS <- as.data.frame(cbind(log10(pcWallS), cWs, rep('D', length(cWs))))
+colnames(allS) <- c('phi', 'p', 'group')
+
+# all together
+allPhi <- as.data.frame(rbind(kps_pHs, Sphi, Nphi, allS))
+colnames(allPhi) <- c('phi', 'p', 'group')
+
+# better write this shit to a file
+write.table(allPhi, file= 'allPhi_Sm.txt', quote= F, col.names= T, row.names= F, sep= '\t')
+
+#####  finally some plotting 
+library(ggplot2)
+
+#
+gg_allPhi <- ggplot(allPhi, aes(x= phi, y= p, colour= group)) + theme_bw() + coord_cartesian(xlim= c(-1.8, 4), ylim= c(0,1))
+
+gg_allPhi + stat_summary(aes(x= phi, y= p, colour= group), geom= 'ribbon', fun.ymin= 'min', fun.ymax= 'max', alpha= 0.7)
+
+
+
+
+
+############### test ggplot 
+
+	#coord_cartesian(xlim= c(-2, 5), ylim= c(0,1)) +
+	#geom_line(data= afDiffS)
+	#theme_bw()
+
+#ggkpH <- ggplot(kps_pHs, aes(x= lkps, y= pHs))  #+ coord_cartesian(xlim= c(-2, 5), ylim= c(0,1)) + theme_bw()
+
+#ggkpH+ 
+	#stat_summary(geom= 'ribbon', fun.ymin= 'min', fun.ymax= 'max', alpha= 0.7) + 
+#		geom_point(aes(x= phO, y= pS, colour= 'red')) # phiObs ~ afdiffS 
+	
+ggAFDphiObs <- ggplot(phiOAFd, aes(x= log10(phiObs), y= pS))  + theme_bw() + coord_cartesian(xlim= c(-1.8, 4), ylim= c(0,1)) 	
+
+ggAFDphiObs + stat_summary(geom= 'ribbon', aes(colour= 'red'), fun.ymin= 'min', fun.ymax= 'max', alpha= 0.7) +
+	stat_summary(aes(x= log10(phO), y= pN, colour= 'blue'), geom= 'ribbon', fun.ymin= 'min', fun.ymax= 'max', alpha= 0.7) + 
+	stat_summary(aes(x= log10(kps), y= pHs, colour= 'grey70'), geom= 'ribbon',  fun.ymin= 'min', fun.ymax= 'max', alpha= 0.7) 
+
+
+	# geom_point(aes(x= log10(pcWallS), y= cWs, colour= 'grey20'))
+	
+
+
+
+
+#stat_summary(geom= 'ribbon', fun.ymin= 'min', fun.ymax= 'max', alpha= 0.5)
+
+
+#ggplot(dat, aes(x=pos,y=value, colour=type)) +
+#	stat_summary(geom="ribbon", fun.ymin="min", fun.ymax="max", aes(fill=type), alpha=0.3) +
+#	theme_bw()
+
+ggkpH +
+	#geom_ribbon(aes(ymin= kps_pHs$pHs -0.02, ymax= kps_pHs$pHs +0.02), fill= 'grey70') +
+	geom_line(aes(x= lkps, y= pHs))
+
+
+
+
+
+	geom_smooth(method="gam", span=0.75, se=TRUE, alpha=0.3) +
+  	theme_bw()
+
+
+
+
 ####
 # Sm
 #plot(log10(phis_Sm[[1]]$kphisMax), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
@@ -371,7 +516,7 @@ for (i in 1:length(phis_Sm)) {
 
 
 
-###
+###   plot phis 
 plot(log10(phis_Sm[[801]]$phiObs), type= 'n')
 
 for (i in 801:1599) {
@@ -467,10 +612,10 @@ mIKgen <- calcMorIripK(fstSpl)
 # now with distance bins (k = 5)
 mIbin <- calcMorIbin(fstSpl)
 
-IKSm <- xtractIK(Sm, setname= 'Sm', folder= 'Sm3')
-IKsm <- xtractIK(sm, setname= 'sm', folder= 'sm')
+#IKSm <- xtractIK(Sm, setname= 'Sm', folder= 'Sm3')
+#IKsm <- xtractIK(sm, setname= 'sm', folder= 'sm')
 
-IK_sM1 <- xtractIK(sMsub[[1]], setname= 'sM', folder= 'sM2')
+#IK_sM1 <- xtractIK(sMsub[[1]], setname= 'sM', folder= 'sM2')
 IK_sM3 <- xtractIK(sMsub[[3]], setname= 'sM', folder= 'sM2')
 IK_sM4 <- xtractIK(sMsub[[4]], setname= 'sM', folder= 'sM2')
 IK_sM5 <- xtractIK(sMsub[[5]], setname= 'sM', folder= 'sM2')
