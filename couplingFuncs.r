@@ -449,30 +449,30 @@ plotStatic.2 <- function(ccObj, run, data, i= '', ...) {
 	par(oma=c(4.5,4.5,4.5,4.5), mar=c(4.0,4.0,4.0,4.0) + 0.2, mgp= c(3,1,0))
 	#par(bg = "white") # erase.screen() will appear not to work if the background color is transparent 
 	split.screen(c(2,4))  
-	#mtext(run, outer = TRUE )#
-	mainList <- c("neutral sit#es", "selected sites")
-	LDlist <- list(ccObj$LDneu#t, ccObj$LDsel)
-	param <- data[which(data$rkun == run),]
-	m <- param$sd_move        n
-	s <- param$mean_s         
-	mutdist <- param$mutation_ distribution  #[which(data$run == run)]
-	tsFreq <- param$ts_samplin#g_frequency
-	xLab <- paste('sampling tipmes (tsFreq =', tsFreq, ')')
-	#                         n
-	# LD                      
-	screen(1)                 S
-	plot(1:length(ccObj$phiObsn), LDlist[[1]][,2], xlim= c(0, length(ccObj$phiObs)+2), ylim= c(0, 1), main= 'LD', ylab= 'Avg LD', xlab= xLab, type= 'l', col= 'blue')
-	points(1:length(ccObj$phiONbs), LDlist[[2]][,2], col= 'red', type= 'l')
-	legend('bottomright', legennd= c('neutral', 'selected'), fill= c('blue', 'red'))
-	#                         #
-	# Fst                     
-	screen(2)                 #
-	cols <- c('blue', 'red', 'ablack') #t(rainbow(3))
-	plot(ccObj$FSTs$FSTneut, tcype= 'l', col= cols[1], ylim= c(0,1), xlim= c(0, length(ccObj$phiObs)+2), ylab= expression('avg F'[st]), main= expression('avg F'[st]), xlab= xLab)
-	points(ccObj$FSTs$FSTsel,  col= cols[2], type= 'l')
-	points(ccObj$FSTs$FSTtot, #col= cols[3], type= 'l', lty= 1)
-	legend('bottomright', legeand= c('neutral', 'selected', 'total'), fill= cols, cex= 0.8)
-	#                         c
+	#mtext(run, outer = TRUE )
+	mainList <- c("neutral sites", "selected sites")
+	LDlist <- list(ccObj$LDneut, ccObj$LDsel)
+	param <- data[which(data$run == run),]
+	m <- param$sd_move
+	s <- param$mean_s
+	mutdist <- param$mutation_distribution  #[which(data$run == run)]
+	tsFreq <- param$ts_sampling_frequency
+	xLab <- paste('sampling times (tsFreq =', tsFreq, ')')
+	#
+	# LD
+	screen(1)
+	plot(1:length(ccObj$phiObs), LDlist[[1]][,2], xlim= c(0, length(ccObj$phiObs)+2), ylim= c(0, 1), main= 'LD', ylab= 'Avg LD', xlab= xLab, type= 'l', col= 'blue')
+	points(1:length(ccObj$phiObs), LDlist[[2]][,2], col= 'red', type= 'l')
+	legend('bottomright', legend= c('neutral', 'selected'), fill= c('blue', 'red'))
+	#
+	# Fst 
+	screen(2)
+	cols <- c('blue', 'red', 'black') #t(rainbow(3))
+	plot(ccObj$FSTs$FSTneut, type= 'l', col= cols[1], ylim= c(0,1), xlim= c(0, length(ccObj$phiObs)+2), ylab= expression('avg F'[st]), main= expression('avg F'[st]), xlab= xLab)
+	points(ccObj$FSTs$FSTsel, col= cols[2], type= 'l')
+	points(ccObj$FSTs$FSTtot, col= cols[3], type= 'l', lty= 1)
+	legend('bottomright', legend= c('neutral', 'selected', 'total'), fill= cols, cex= 0.8)
+	#
 	# PHIs per generation
 	screen(3) #, new= F)
 	plot(log10(ccObj$phiObs), ylab= expression(paste('log'[10]~ phi)), xlab= xLab, type= 'l', ylim= c(-2, max(log10(ccObj$kphisMax))+ 1), col= 'grey70')  # xlim=  c(0, length(ccObj$phiObs)+100)
