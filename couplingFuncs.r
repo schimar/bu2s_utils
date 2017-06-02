@@ -772,6 +772,7 @@ phi2plot <- function(phis, ...) {
 	#allPhi <- list(kps_pHs, Sphi, Nphi, allS)
 	#names(allPhi) <- c('kphi', 'pS', 'pN', 'allS')
 	return(allPhi)
+	gc()
 }
 
 

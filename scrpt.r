@@ -281,10 +281,10 @@ load('~/flaxmans/bu2s/runs/PHIs/sM/.RData')
 load("~/schimar/bu2s/runs/Le/.RData")
 load("~/schimar/bu2s/runs/LD/.RData")
 load("~/schimar/bu2s/runs/PHIs/sm/.RData")
-load("~/schimar/bu2s/runs/PHIs/sM/.RData")
+#load("~/schimar/bu2s/runs/PHIs/sM/.RData")
 load("~/schimar/bu2s/runs/PHIs/S_m/.RData")
 
-
+load("~/schimar/bu2s/runs/PHIs/sM/phis_sM1.RData")
 
 # plot phis & afDiffS
 # sm
@@ -460,6 +460,13 @@ allPhism <- phi2plot(phis_sm[801:1600])
 allPhisM1 <- phi2plot(phis_sM1)
 
 
+phis <- allPhisM1
+#
+kphi <- phis[which(phis$group == 'C'),]
+pS <- phis[which(phis$group == 'A'),]
+pN <- phis[which(phis$group == 'B'),]
+allS <- phis[which(phis$group == 'D'),]
+
 
 
 
@@ -467,11 +474,11 @@ allPhisM1 <- phi2plot(phis_sM1)
 #phis <- allPhism
 #
 ##
-#plot(phis$allS$phi, phis$allS$p, type= 'p', pch= '.', cex= 1.0, col= 'grey80', ylim= c(0,1), xlim= c(-2, 3.5), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])))
-#points(phis$pS$phi, phis$pS$p, pch= '.', col= 'firebrick1')
-#points(phis$kphi$phi, phis$kphi$p, pch= '.', col= 'black')
-#points(phis$pN$phi, phis$pN$p, pch= '.', col= 'deepskyblue1')
-#legend('topleft', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'firebrick1', 'deepskyblue1'), cex= 0.8)
+matplot(allS$phi, allS$p, type= 'p', pch= '.', cex= 1.0, col= 'grey80', ylim= c(0,1), xlim= c(-2, 3.5), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])))
+matpoints(pS$phi, pS$p, pch= '.', col= 'firebrick1')
+matpoints(kphi$phi, kphi$p, pch= '.', col= 'black', cex= 1.0)
+matpoints(pN$phi, pN$p, pch= '.', col= 'deepskyblue1')
+legend('topleft', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'firebrick1', 'deepskyblue1'), cex= 0.8)
 
 #legend('topleft', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'firebrick1', 'deepskyblue1'), cex= 0.8)
 
