@@ -725,7 +725,7 @@ xtractPhis <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/'
 }		
 # maybe write another function ('ccStats.2 abgespeckt') to calcPHIs and get afDiffs  (so it doesn't take as outlandischly long to get this...) 
 
-phi2ggplot <- function(phis, ...) {
+phi2plot <- function(phis, ...) {
 	# function to get the output for ggplot2 plots from the output of xtractPhis
 	kps <- unlist(lapply(phis, '[[', 2))
 	pHs <- unlist(lapply(phis, '[[', 3))
@@ -758,7 +758,7 @@ phi2ggplot <- function(phis, ...) {
 	
 	Sphi <- as.data.frame(cbind(as.numeric(log10(phiOAFd$phiObs)), as.numeric(phiOAFd$pS), rep('A', length(phiOAFd$pS))))	
 	names(Sphi) <- c('phi', 'p', 'group')
-	Nphi <- as.data.frame(cbind(as.numeric(log10(phiOAFd$phiObs)), as.numeric(phiOAFd$pN), rep('B', length(phiOAFd$pS))))	
+	Nphi <- as.data.frame(cbind(as.numeric(log10(phiOAFd$phiObs)), as.numeric(phiOAFd$pN), rep('B', length(phiOAFd$pN))))	
 	names(Nphi) <- c('phi', 'p', 'group')
 	# obsPHI <- rbind(Sphi, Nphi)
 	
@@ -766,9 +766,11 @@ phi2ggplot <- function(phis, ...) {
 	allS <- as.data.frame(cbind(log10(pcWallS), cWs, rep('D', length(cWs))))
 	colnames(allS) <- c('phi', 'p', 'group')
 	
-	# all together
-	allPhi <- as.data.frame(rbind(kps_pHs, Sphi, Nphi, allS))
-	colnames(allPhi) <- c('phi', 'p', 'group')
+	# all together (used for ggplot2)
+	# allPhi <- as.data.frame(rbind(kps_pHs, Sphi, Nphi, allS))
+	# colnames(allPhi) <- c('phi', 'p', 'group')
+	allPhi <- list(kps_pHs, Sphi, Nphi, allS)
+	names(allPhi) <- c('kphi', 'pS', 'pN', 'allS')
 	return(allPhi)
 }
 
