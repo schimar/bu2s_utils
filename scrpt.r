@@ -11,19 +11,19 @@
 # Kruuk 1999's summed coupling coefficient (phi = (L-1)s/r) 
 # Le (effective nLoci)  (Le = s*/s)
 
+#### pandapeter 
+source("~/flaxmans/bu2s/bu2s_utils/couplingFuncs.r")
+
+df <- read.table("~/flaxmans/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
+names(df) <- tolower(names(df))
+
+
 
 # on ruderalis:
 source('~/schimar/bu2s/bu2s_utils/couplingFuncs.r')
 df  <- read.table("~/schimar/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
 names(df) <- tolower(names(df))
 
-
-#### pandapeter 
-
-source("~/flaxmans/bu2s/bu2s_utils/couplingFuncs.r")
-
-df <- read.table("~/flaxmans/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
-names(df) <- tolower(names(df))
 
 
 #########################    simple SUBSETS 
