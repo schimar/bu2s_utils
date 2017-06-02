@@ -767,10 +767,10 @@ phi2plot <- function(phis, ...) {
 	colnames(allS) <- c('phi', 'p', 'group')
 	
 	# all together (used for ggplot2)
-	# allPhi <- as.data.frame(rbind(kps_pHs, Sphi, Nphi, allS))
-	# colnames(allPhi) <- c('phi', 'p', 'group')
-	allPhi <- list(kps_pHs, Sphi, Nphi, allS)
-	names(allPhi) <- c('kphi', 'pS', 'pN', 'allS')
+	allPhi <- as.data.frame(rbind(kps_pHs, Sphi, Nphi, allS))
+	colnames(allPhi) <- c('phi', 'p', 'group')
+	#allPhi <- list(kps_pHs, Sphi, Nphi, allS)
+	#names(allPhi) <- c('kphi', 'pS', 'pN', 'allS')
 	return(allPhi)
 }
 
