@@ -444,38 +444,56 @@ library(ggplot2)
 
 #
 # call func 
-allPhi <- phi2ggplot(phis_Sm[801:900])
-
-# 
-gg_allPhi <- ggplot(allPhi, aes(x= phi, y= p, colour= group)) + theme_bw() + coord_cartesian(xlim= c(-1.8, 4), ylim= c(0,1))
-
-gg_allPhi + stat_summary(aes(x= phi, y= p, colour= group), geom= 'ribbon', fun.ymin= 'min', fun.ymax= 'max', alpha= 0.7)
-
-
-allPhism <- phi2ggplot(phis_sm[])
+#allPhi <- phi2plot(phis_Sm[801:900])
+#
+## 
+#gg_allPhi <- ggplot(allPhi, aes(x= phi, y= p, colour= group)) + theme_bw() + coord_cartesian(xlim= c(-1.8, 4), ylim= c(0,1))
+#
+#gg_allPhi + stat_summary(aes(x= phi, y= p, colour= group), geom= 'ribbon', fun.ymin= 'min', fun.ymax= 'max', alpha= 0.7)
 
 
+allPhiSm <- phi2plot(phis_Sm[801:1599])
 
-# 
-kphi <- allPhi[which(allPhi$group == 'C'),]
-pS <- allPhi[which(allPhi$group == 'A'),]
-pN <- allPhi[which(allPhi$group == 'B'),]
-allS <- allPhi[which(allPhi$group == 'D'),]
+
+allPhism <- phi2plot(phis_sm[801:1600])
+
+allPhisM1 <- phi2plot(phis_sM1)
+
+
 
 
 
 # R base plot 
+#phis <- allPhism
+#
+##
+#plot(phis$allS$phi, phis$allS$p, type= 'p', pch= '.', cex= 1.0, col= 'grey80', ylim= c(0,1), xlim= c(-2, 3.5), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])))
+#points(phis$pS$phi, phis$pS$p, pch= '.', col= 'firebrick1')
+#points(phis$kphi$phi, phis$kphi$p, pch= '.', col= 'black')
+#points(phis$pN$phi, phis$pN$p, pch= '.', col= 'deepskyblue1')
+#legend('topleft', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'firebrick1', 'deepskyblue1'), cex= 0.8)
 
+#legend('topleft', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'firebrick1', 'deepskyblue1'), cex= 0.8)
+
+######
+phis <- allPhism
+#
+kphi <- phis$kphi
+pS <- phis$pS
+pN <- phis$pN
+allS <- phis$allS
+
+
+#
 plot(allS$phi, allS$p, type= 'p', pch= '.', cex= 1.0, col= 'grey80', ylim= c(0,1), xlim= c(-2, 3.5), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])))
 points(pS$phi, pS$p, pch= '.', col= 'firebrick1')
 points(kphi$phi, kphi$p, pch= '.', col= 'black')
 points(pN$phi, pN$p, pch= '.', col= 'deepskyblue1')
-legend('topleft', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'firebrick1', 'deepskyblue1'), cex= 0.8)
-#legend('topleft', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'firebrick1', 'deepskyblue1'), cex= 0.8)
+
+legend('topleft', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'firebrick1', 'deepskyblue1'), cex= 1.4)
 
 
-
-qplot(kphi$phi, kphi$p, geom='smooth', span =0.5)
+#qplot(kphi$phi, kphi$p, geom='smooth', span =0.5)
 ############### test ggplot 
 
 	#coord_cartesian(xlim= c(-2, 5), ylim= c(0,1)) +

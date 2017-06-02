@@ -741,7 +741,7 @@ phi2plot <- function(phis, ...) {
 	phiOncW <- list()
 	for (i in 1:length(phis)) {
 		#k <- i + 800
-		phiOncW[[i]] <- mapply(rep, phis[[1]]$phiObs, times= unlist(lapply(phis[[i]]$cWallS, length)))
+		phiOncW[[i]] <- mapply(rep, phis[[i]]$phiObs, times= unlist(lapply(phis[[i]]$cWallS, length)))
 	}
 	# flatten 
 	pcWallS <- unlist(lapply(phiOncW, unlist))
