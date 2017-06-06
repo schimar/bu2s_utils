@@ -92,7 +92,7 @@ paths <-  '/media/schimar/schimar2/bu2s/h5/'
 paramSub <- sMsub[[2]][1:10,]
 wrapH5static(paramSub, 'sM', path= paths)
 
-wrapH5static(Sm[1:100,], 'Sm')
+wrapH5static(sM[1:100,], 'sM')
 
 
 wrapH5static(paramSub, 'Sm')
@@ -118,7 +118,7 @@ phis_sm <- xtractPhis(sm, 'sm', 'sm', maf= 0.025)		#path= '/media/schimar/FLAXMA
 
 
 # sM
-phis_sM <- xtractPhis(sM, setname= 'sM', folder= 'sM2', maf= 0.025)
+#phis_sM <- xtractPhis(sM, setname= 'sM', folder= 'sM2', maf= 0.025)
 
 # running on ruderalis as "phisM"
 # resume with: screen -r phisM
@@ -359,57 +359,40 @@ plotPhis(phis_sM9)
 #for (i in length(phis_Sm)) {
 	
 ############################ 
-# plot sets of phis with ggplot2
+# plot sets of phis (with ggplot2)
+
+######################### manual run 
+#load('sM_cWs_pcWallS.RData')
 
 
-kps <- unlist(lapply(phis_Sm[801:1599], '[[', 2))
-pHs <- unlist(lapply(phis_Sm[801:1599], '[[', 3))
+phis <- phis_sM1 
 
-phO <- unlist(lapply(phis_Sm[801:1599], '[[', 1))
-pN <- unlist(lapply(phis_Sm[801:1599], '[[', 5))
-pS <- unlist(lapply(phis_Sm[801:1599], '[[', 4))
 
-cWs <- unlist(lapply(phis_Sm[801:1599], '[[', 6))
+kps <- unlist(lapply(phis, '[[', 2))
+pHs <- unlist(lapply(phis, '[[', 3))
+
+phO <- unlist(lapply(phis, '[[', 1))
+pN <- unlist(lapply(phis, '[[', 5))
+pS <- unlist(lapply(phis, '[[', 4))
+
+cWs <- unlist(lapply(phis, '[[', 6))
 #
-
-
-# create matrices with runs as rows and generations as columns
-#kphis <- do.call(rbind, lapply(phis_Sm, '[[', 2))
-#pHatsMax <- do.call(rbind, lapply(phis_Sm, '[[', 3))
-#afDn <- do.call(rbind, lapply(phis_Sm, '[[', 5))
-#afDs <- do.call(rbind, lapply(phis_Sm, '[[', 4))
-#phiObs <- do.call(rbind, lapply(phis_Sm, '[[', 1))
-#cWallS  <- do.call(rbind, lapply(phis_Sm, '[[', 6))
-#
-#
-#kpHat <- as.data.frame(cbind(log10(apply(kphis[801:1599,], 2, mean, na.rm= T)), apply(pHatsMax[801:1599,], 2, mean, na.rm= T)))
-#names(kpHat) <- c('kphisMax', 'pHatsMax')
-
-##################
-#ggplot(dat, aes(x=pos,y=value, colour=type)) +
-#  stat_smooth(method="loess", span=0.1, se=TRUE, aes(fill=type), alpha=0.3) +
-#  theme_bw()
-
-#ggplot(kpHat, aes(x= kphisMax, y= pHatsMax)) + geom_line(size= 1) + theme_bw() + coord_cartesian(ylim= c(0, 1))
-#+ geom_line() 
-
-##
 
 # get the 'phiOncW' for selected and neutral afDiffs
 phiOncW <- list()
-for (i in 1:length(phis_Sm[801:1599])) {
-	k <- i + 800
-	phiOncW[[i]] <- mapply(rep, phis_Sm[[k]]$phiObs, times= unlist(lapply(phis_Sm[[k]]$cWallS, length)))
+for (i in 1:length(phis)) {
+	#k <- i + 800
+	phiOncW[[i]] <- mapply(rep, phis[[i]]$phiObs, times= unlist(lapply(phis[[i]]$cWallS, length)))
 }
+
+
 # flatten 
 pcWallS <- unlist(lapply(phiOncW, unlist))
 
+gc()
+rm(phis)
+rm(phis_sM1)
 
-##
-
-### cbind phi and ps 
-# kruuk: 
-# 		(kps_pHs)
 kps_pHs <- as.data.frame(cbind(log10(kps), pHs, rep('C', length(kps))))
 names(kps_pHs) <- c('phi', 'p', 'group')
 
@@ -425,12 +408,42 @@ names(Nphi) <- c('phi', 'p', 'group')
 # obsPHI <- rbind(Sphi, Nphi)
 
 # expectations based on per-locus s:
-allS <- as.data.frame(cbind(log10(pcWallS), cWs, rep('D', length(cWs))))
-colnames(allS) <- c('phi', 'p', 'group')
+#allS <- as.data.frame(cbind(log10(pcWallS), cWs, rep('D', length(cWs))))
+#colnames(allS) <- c('phi', 'p', 'group')
 
-# all together
-allPhi <- as.data.frame(rbind(kps_pHs, Sphi, Nphi, allS))
-colnames(allPhi) <- c('phi', 'p', 'group')
+cWss <- x$cWs[c(TRUE, FALSE, FALSE)]
+lpcWallSs <- log10(x$pcWallS[c(TRUE, FALSE, FALSE)])
+
+##
+matplot(lpcWallSs, cWss, type= 'p', pch= '.', cex= 1.0, col= 'grey80', ylim= c(0,1), xlim= c(-2, 4.5), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])))
+matpoints(Sphi$phi, Sphi$p, pch= '.', col= 'firebrick1')
+matpoints(kps_pHs$phi, kps_pHs$p, pch= '.', col= 'black', cex= 1.0)
+matpoints(Nphi$phi, Nphi$p, pch= '.', col= 'deepskyblue1')
+legend('topleft', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'firebrick1', 'deepskyblue1'), cex= 0.8)
+
+##################################################################
+
+
+# create matrices with runs as rows and generations as columns
+#kphis <- do.call(rbind, lapply(phis_Sm, '[[', 2))
+#pHatsMax <- do.call(rbind, lapply(phis_Sm, '[[', 3))
+#afDn <- do.call(rbind, lapply(phis_Sm, '[[', 5))
+#afDs <- do.call(rbind, lapply(phis_Sm, '[[', 4))
+#phiObs <- do.call(rbind, lapply(phis_Sm, '[[', 1))
+#cWallS  <- do.call(rbind, lapply(phis_Sm, '[[', 6))
+#
+#
+
+
+
+
+
+
+
+
+
+
+
 
 
 # better write this shit to a file
@@ -613,8 +626,24 @@ s500 <- ccStats.2('Run215500', df, cc500, maf= 0.025)
 
 # on ruderalis
 
-cc500 <- readCCobjRude('Run215500', smParam= 'sM', folder= 'sM2', path= '/media/schimar/FLAXMAN/h5/')
+cc500 <- readCCobjRude('Run215500', smParam= 'sM', folder= 'sM2', path= '/home/schimar/FLAXMAN/h5/')
 s500 <- ccStats.2('Run215500', df, cc500, maf= 0.025)
+
+#####  
+
+# for poster: Run206171 (sm[801,])
+cc171 <- readCCobj('Run206171', 'sm', path= paths) #'/media/schimar/dapperdata/bu2s/h5/')
+s171 <- ccStats.2('Run206171', df, cc171, maf= 0.025)
+
+cc210 <- readCCobj('Run210070', 'sm', path= '/media/schimar/dapperdata/bu2s/h5/')
+s210 <- ccStats.2('Run210070', df, cc210, maf= 0.025)
+
+
+
+# sMsub[[1]][1,]
+cc571 <- readCCobj('Run212571', 'sM', path= '/media/schimar/dapperdata/bu2s/h5/')
+s571 <- ccStats.2('Run212571', df, cc571, maf= 0.025)
+
 
 
 
@@ -669,7 +698,7 @@ mIbin <- calcMorIbin(fstSpl)
 #IKSm <- xtractIK(Sm, setname= 'Sm', folder= 'Sm3')
 #IKsm <- xtractIK(sm, setname= 'sm', folder= 'sm')
 
-#IK_sM1 <- xtractIK(sMsub[[1]], setname= 'sM', folder= 'sM2')
+IK_sM1 <- xtractIK(sMsub[[1]], setname= 'sM', folder= 'sM2', path= '/media/schimar/FLAXMAN/h5/')
 IK_sM3 <- xtractIK(sMsub[[3]], setname= 'sM', folder= 'sM2')
 IK_sM4 <- xtractIK(sMsub[[4]], setname= 'sM', folder= 'sM2')
 IK_sM5 <- xtractIK(sMsub[[5]], setname= 'sM', folder= 'sM2')
@@ -679,8 +708,9 @@ IK_sM8 <- xtractIK(sMsub[[8]], setname= 'sM', folder= 'sM2')
 IK_sM9 <- xtractIK(sMsub[[9]], setname= 'sM', folder= 'sM2')
 
 
-
-
+# get the absolute values and calc mean (for each chromosome) 
+# then plot the 4 chromosomes' means across generations
+#  do we see changes in values before/at/after GWC?) 
 
 #### various wrapper functions  
 
@@ -766,27 +796,41 @@ plotFstMAPmorI <- function(fstspl, morI, time= 1,...) {
 	}
 }
 
-#		for (j in 1:length(morI[[i]])) {
-#	
-#			# MorI 
-#			cMorI <- morI[[i]][[j]]
-#			barx <- barplot(cMorI$obs, ylim= c(-1, 1), pch= 20, main= paste("Moran's I, gen = ", i), names.arg= c(1,2,3,4,5), ylab= "Moran's I", xlab= 'distance bins')      # col= grouplist[[i]][[j]]
-#			sdI <- cMorI$sd
-#			sdI[which(sdI == Inf)] <- NA
-#			sdI[which(sdI == NaN)] <- NA
-#			error.bar(barx, cMorI$obs, sdI)
-#			}
-#		Sys.sleep(0.8)
-#
-#	}
-#}
+
+##########################
+
+# get obs and sd from IKsm   
+load("~/schimar/bu2s/runs/mIripK/Sm/.RData")
 
 
+Ism <- lapply(IKsm[801:1600], '[[', 1)
 
+Ism <- lapply(IKSm[801:1599], '[[', 1)
+
+
+Iobs <- list()
+Isd <- list()
+for (i in 1:length(Ism)) {
+	Iobs[[i]] <- as.data.frame(do.call(rbind, lapply(Ism[[i]], '[[', 1)))
+	Isd[[i]] <- as.data.frame(do.call(rbind, lapply(Ism[[i]], '[[', 3)))
+}
+
+
+## 
+plot(Iobs[[1]][,1], type= 'l', ylim= c(-0.5, 0.5))
+points(Iobs[[1]][,2], type= 'l', col= 'deepskyblue2')
+points(Iobs[[1]][,3], type= 'l', col= 'firebrick3')
+points(Iobs[[1]][,4], type= 'l', col= 'chartreuse1')
 
 #############################################
 
+chrom1sm <- lapply(Iobs, '[[', 1)
 
+plot(chrom1sm[[1]], type= 'n', xlim= c(0, 303), ylim= c(-0.6, 0.7), xlab= 'generations / 172', ylab= "Moran's I")
+for (i in 1:length(chrom1sm)) {
+	points(chrom1sm[[i]], type= 'l', col= t(rainbow(800))[i])
+}
+abline(h= 0, lty= 2)
 
 
 #library(Hmisc) 

@@ -461,13 +461,13 @@ plotStatic.2 <- function(ccObj, run, data, i= '', ...) {
 	#
 	# LD
 	screen(1)
-	plot(1:length(ccObj$phiObs), LDlist[[1]][,2], xlim= c(0, length(ccObj$phiObs)+2), ylim= c(0, 1), main= 'LD', ylab= 'Avg LD', xlab= xLab, type= 'l', col= 'blue')
-	points(1:length(ccObj$phiObs), LDlist[[2]][,2], col= 'red', type= 'l')
+	plot(1:length(ccObj$phiObs), LDlist[[1]][,2], xlim= c(0, length(ccObj$phiObs)+2), ylim= c(0, 1), main= 'LD', ylab= 'Avg LD', xlab= xLab, type= 'l', col= 'deepskyblue1')
+	points(1:length(ccObj$phiObs), LDlist[[2]][,2], col= 'firebrick1', type= 'l')
 	legend('bottomright', legend= c('neutral', 'selected'), fill= c('blue', 'red'))
 	#
 	# Fst 
 	screen(2)
-	cols <- c('blue', 'red', 'black') #t(rainbow(3))
+	cols <- c('deepskyblue1', 'firebrick1', 'black') #t(rainbow(3))
 	plot(ccObj$FSTs$FSTneut, type= 'l', col= cols[1], ylim= c(0,1), xlim= c(0, length(ccObj$phiObs)+2), ylab= expression('avg F'[st]), main= expression('avg F'[st]), xlab= xLab)
 	points(ccObj$FSTs$FSTsel, col= cols[2], type= 'l')
 	points(ccObj$FSTs$FSTtot, col= cols[3], type= 'l', lty= 1)
@@ -491,11 +491,11 @@ plotStatic.2 <- function(ccObj, run, data, i= '', ...) {
 	#abline(h= 0, lty= 3)
 	#}
 	points(log10(unlist(phiOncW)), unlist(cWallS), pch= '.', col= 'grey70') #type= 'l')
-	points(log10(unlist(ccObj$phiObs)), unlist(lapply(lapply(ccObj$afDiffS, abs), mean)), pch= '.', cex= 1.4, col= 'red')
-	points(log10(unlist(ccObj$phiObs)), unlist(lapply(lapply(ccObj$afDiffN, abs), mean)), pch= '.', cex= 1.4, col= 'blue')
+	points(log10(unlist(ccObj$phiObs)), unlist(lapply(lapply(ccObj$afDiffS, abs), mean)), pch= '.', cex= 1.4, col= 'firebrick1')
+	points(log10(unlist(ccObj$phiObs)), unlist(lapply(lapply(ccObj$afDiffN, abs), mean)), pch= '.', cex= 1.4, col= 'deepskyblue1')
 	#points(log10(unlist(ccObj$phiObs)), unlist(ccObj$avgAFDiff), type= 'l', col= 'black')
 
-	legend('bottomright', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'red', 'blue'), cex= 0.8)
+	legend('bottomright', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), expression(paste(phi, ' ~ ', bar(p), ' all s')), expression(paste(phi, ' ~ avg p S')), expression(paste(phi, ' ~ avg p N'))), fill= c('black', 'grey70', 'firebrick1', 'deepskyblue1'), cex= 0.8)
 	#
 	# plot Le and me
 	screen(5)
@@ -504,11 +504,11 @@ plotStatic.2 <- function(ccObj, run, data, i= '', ...) {
 	emig[which(emig == 0)] <- 1e-10
 	plot(log10(abs(ccObj$sStarLeS$Le)), type= 'l', xlab= xLab, ylab= expression(paste('log'[10], '.')) , ylim= c(-10, 7))#, ylim= c(min(log10(emig)), max(log10(abs(ccObj$sStarLeS$Le)))))      # ylab was expression(paste('log'[10]~'L'[e]))
 	abline(v= which.min(log10(abs(ccObj$sStarLeS$Le))), lty= 2, col= 'black')
-	points(log10(emig), col= 'blue', type= 'l')
+	points(log10(emig), col= 'deepskyblue1', type= 'l')
 	points(log10(ccObj$sBar), type= 'l', col= 'orange')
-	points(log10(ccObj$sMax), type= 'l', col= 'red')
+	points(log10(ccObj$sMax), type= 'l', col= 'firebrick1')
 	abline(v= ccObj$gwcTimeMeanS$gwcTime/tsFreq, lty= 2, col= 'green')
-	legend('bottomright', legend= c(expression('L'[e]), expression('m'[e]), 'gwcTime meanS', expression(bar(s)), 'sMax'), lty= c(1, 1, 2), col= c('black', 'blue', 'green', 'orange', 'red'), cex= 0.8)
+	legend('bottomright', legend= c(expression('L'[e]), expression('m'[e]), 'gwcTime meanS', expression(bar(s)), 'sMax'), lty= c(1, 1, 2), col= c('black', 'deepskyblue1', 'green', 'orange', 'firebrick1'), cex= 0.8)
 	text(x= 0.6*length(ccObj$meanS), y= 0.6*max(log10(emig)), paste("gwc time = ", ccObj$gwcTimeMeanS$gwcTime))
 	#
 	# plot effMig  
@@ -518,8 +518,8 @@ plotStatic.2 <- function(ccObj, run, data, i= '', ...) {
 	points(ccObj$maxEffMigMeanS, col= 'green', type= 'l')
 	points(ccObj$recomb, type= 'l', col= 'cyan')
 
-	abline(h= m, col= 'red', lty= 3)
-	abline(h= s, col= 'blue', lty= 3)
+	abline(h= m, col= 'firebrick1', lty= 3)
+	abline(h= s, col= 'deepskyblue1', lty= 3)
 	abline(v= ccObj$gwcTimeSbar$gwcTime/tsFreq, col= 'orange', lty= 2)
 	abline(v= ccObj$gwcTimeMeanS$gwcTime/tsFreq, col= 'green', lty= 2)
 	endAllo <- data$end_period_allopatry[which(data$run == run)]
@@ -528,7 +528,7 @@ plotStatic.2 <- function(ccObj, run, data, i= '', ...) {
 	}
 	text(x= 0.8* length(ccObj$meanS), y= 0.4*max(ccObj$effMig[,2]), paste('mutdist = ', mutdist)) 
 	text(x= 0.3* length(ccObj$meanS), y= 1.3*max(ccObj$effMig[,2]), paste('endPallo = ', param$end_period_allopatry))
-	cols <- c('orange', 'green', 'black', 'cyan', 'red', 'blue', 'orange', 'green')
+	cols <- c('orange', 'green', 'black', 'cyan', 'firebrick1', 'deepskyblue1', 'orange', 'green')
 	legend('topright', legend= c(expression(paste('maxEffMig ', bar(s))), 'maxEffMig meanS', expression(paste('m'[e0])), 'recomb.', 'm', 's', expression(paste('gwcTime ', bar(s))), 'gwcTime meanS'), col= cols, lty= c(1,1,1,3,3,2,2), pch= c(NA,NA,NA,NA,NA,NA,NA), pt.cex= 2, seg.len= 0.9, cex= 0.7)
 	#
 	screen(7)
@@ -541,9 +541,9 @@ plotStatic.2 <- function(ccObj, run, data, i= '', ...) {
 
 	#
 	screen(8)
-	plot(unlist(lapply(lapply(ccObj$afDiffS, abs), mean)), pch= '.', col= 'red', ylab= 'allele freq diffs', cex= 1.4)
-	points(unlist(lapply(lapply(ccObj$afDiffN, abs), mean)), pch= '.', col= 'blue')
-	legend('bottomright', legend= c('neutral', 'selected'), fill= c('blue', 'red'))
+	plot(unlist(lapply(lapply(ccObj$afDiffS, abs), mean)), pch= '.', col= 'firebrick1', ylab= 'allele freq diffs', cex= 1.4)
+	points(unlist(lapply(lapply(ccObj$afDiffN, abs), mean)), pch= '.', col= 'deepskyblue1')
+	legend('bottomright', legend= c('neutral', 'selected'), fill= c('deepskyblue1', 'firebrick1'))
 	#
 	close.screen(all= T)
 	title(paste(run, ' (',i, ')', sep= ''), outer= T)
@@ -827,7 +827,7 @@ xtractLD <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/', 
 }		
 
 
-xtractIK <- function(data, setname, folder, path= '/home/schimar/FLAXMAN/h5/', maf= 25e-4, ...) {
+xtractIK <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/', maf= 25e-4, ...) {
 	# function to read individual runs (from vector of runs), calculate CC and create new list (of length(data)) that contains effMig, Le and gwcTime  
 	#
 	runs <- list()
@@ -846,10 +846,12 @@ xtractIK <- function(data, setname, folder, path= '/home/schimar/FLAXMAN/h5/', m
 
 		names(runs)[i] <- run
 		#names(runs[[i]]) <- c('LDneut', 'LDsel', 'dXY')
+		gc()
 	}
 	#out <- list(phiObs, kphisMax)
 	#names(out) <- c('phiObs', 'kphisMax')
 	return(runs)
+	gc()
 }		
 
 
