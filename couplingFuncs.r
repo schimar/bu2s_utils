@@ -301,6 +301,27 @@ readCCobjRude <- function(run, smParam, folder, path, ...) {
 	return(out)
 }
 
+readCCobjRudeX <- function(run, smParam, folder, path, ...) {
+	# function to read a single data set (as input for ccStats) (on ruderalis.colorado.edu)
+	path5 <- paste('/runs/', run, sep= '')
+	fstTmp <- as.data.frame(h5read(paste(path, folder, '/Fst_', smParam, 'T.h5', sep= ''), name= path5)[[1]])
+	aftsTmp <- as.data.frame(h5read(paste(path, folder, '/afts_', smParam, 'T.h5', sep= ''), name= path5)[[1]])
+	colnames(fstTmp) <- c("nGen", "locusID", "Fst", "allele_frequencies", "S_MAX1", "S_MAX0", "chromosomeMembership", "MAP", "locType")
+	colnames(aftsTmp) <- c("nGen", "locusID", "AFpatch0", "AFpatch1", "is_reversed_locus", "locType", "AF", "AFdiff")
+	#
+	LDselTmp <- h5read(paste(path, folder, '/LDselAvg_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
+	LDneuTmp <- h5read(paste(path, folder, '/LDneutAvg_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
+	effMig <- h5read(paste(path, folder, '/effMig_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
+	colnames(effMig) <- c("nGen", "eme0", "eme1", "nVariableLoci", "nRes", "nImm", paste('V', seq(7, 26,1)))
+	dXY <- h5read(paste(path, folder, '/dXY_', smParam, 'T.h5', sep= ''), name= path5)[[1]]
+	colnames(dXY) <- c('nGen', 'dXY', 'deme0', 'deme1')
+	#
+	out <- list(fstTmp, aftsTmp, LDselTmp, LDneuTmp, effMig, dXY)
+	names(out) <- c('fst', 'afts', 'LDsel', 'LDneut', 'effMig', 'dXY')
+	return(out)
+}
+
+
 
 ccStats.2 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LDsel, LDneut, effMig, run, maf= 25e-4, nChrom= 4) {
 	# function to calculate coupling/congealing stats for a given run 
