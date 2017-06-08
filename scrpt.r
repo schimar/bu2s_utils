@@ -698,10 +698,12 @@ mIbin <- calcMorIbin(fstSpl)
 #IKSm <- xtractIK(Sm, setname= 'Sm', folder= 'Sm3')
 #IKsm <- xtractIK(sm, setname= 'sm', folder= 'sm')
 
-IK_sM1 <- xtractIK(sMsub[[1]], setname= 'sM', folder= 'sM2', path= '/media/schimar/FLAXMAN/h5/')
+### IK_sM1 <- xtractIK(sMsub[[1]], setname= 'sM', folder= 'sM2', path= '/media/schimar/FLAXMAN/h5/')
 IK_sM3 <- xtractIK(sMsub[[3]], setname= 'sM', folder= 'sM2')
 IK_sM4 <- xtractIK(sMsub[[4]], setname= 'sM', folder= 'sM2')
-IK_sM5 <- xtractIK(sMsub[[5]], setname= 'sM', folder= 'sM2')
+IK_sM5 <- xtractIK(sMsub[[5]], setname= 'sM', folder= 'sM2')gwc <- wrapGWCtime('/media/schimar/FLAXMAN/h5/', sm[801:1600,], setname= 'sm', folder= 'sm')
+
+
 IK_sM6 <- xtractIK(sMsub[[6]], setname= 'sM', folder= 'sM2')
 IK_sM7 <- xtractIK(sMsub[[7]], setname= 'sM', folder= 'sM2')
 IK_sM8 <- xtractIK(sMsub[[8]], setname= 'sM', folder= 'sM2')
@@ -826,13 +828,44 @@ points(Iobs[[1]][,4], type= 'l', col= 'chartreuse1')
 
 chrom1sm <- lapply(Iobs, '[[', 1)
 
-plot(chrom1sm[[1]], type= 'n', xlim= c(0, 303), ylim= c(-0.6, 0.7), xlab= 'generations / 172', ylab= "Moran's I")
+cols <- rainbow(1000)
+plot(chrom1sm[[1]], type= 'n', xlim= c(0, 290), ylim= c(-0.6, 0.7), xlab= 'generations / 172', ylab= "Moran's I")
 for (i in 1:length(chrom1sm)) {
-	points(chrom1sm[[i]], type= 'l', col= t(rainbow(800))[i])
+	points(chrom1sm[[i]], type= 'l', col= cols[i])
 }
 abline(h= 0, lty= 2)
 
 
+###
+wrapGWCtime <- function(path, data, setname, folder, ...) {
+	# function to read individual runs (from vector of runs), calculate CC and plotStatic
+	gwcTimes <- list()
+	for (i in 1:dim(data)[1]){
+		run <- data$run[i]
+		path5 <- paste('/runs/', run, sep= '')
+		#
+		ccObjTmp <- readCCobjRude(run, setname, folder, path)
+		ccTmp <- ccStats.2(run, data, ccObjTmp, maf= 0.05)
+		#
+		gwcTimes[[i]] <- ccTmp$gwcTimeMeanS$gwcTime
+		
+	H5close()
+	}
+	return(gwcTimes)
+}
+gwc <- wrapGWCtime('/media/schimar/FLAXMAN/h5/', sm[801:1600,], setname= 'sm', folder= 'sm')
+gwcSm <- wrapGWCtime('/media/schimar/FLAXMAN/h5/', Sm[801:1599,], setname= 'Sm', folder= 'Sm3')
+
+gwcsM <- wrapGWCtime('/media/schimar/FLAXMAN/h5/', sMsub[[1]], setname= 'sM', folder= 'sM2')
+
+
+
+
+#ccStats.2('Run215500', df, cc500, maf= 0.025)
+
+
+
+#-----------------------------------------------------------------------------------------------------------------
 #library(Hmisc) 
 
 #arrows(x, avg-sdev, x, avg+sdev, length=0.05, angle=90, code=3)

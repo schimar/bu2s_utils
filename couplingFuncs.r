@@ -846,6 +846,7 @@ xtractIK <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/', 
 
 		names(runs)[i] <- run
 		#names(runs[[i]]) <- c('LDneut', 'LDsel', 'dXY')
+		rm(ccObjTmp)
 		gc()
 	}
 	#out <- list(phiObs, kphisMax)
