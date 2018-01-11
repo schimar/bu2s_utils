@@ -20,9 +20,9 @@ names(df) <- tolower(names(df))
 
 
 # on ruderalis:
-source('~/schimar/bu2s/bu2s_utils/couplingFuncs.r')
-df  <- read.table("~/schimar/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
-names(df) <- tolower(names(df))
+#source('~/schimar/bu2s/bu2s_utils/couplingFuncs.r')
+#df  <- read.table("~/schimar/bu2s/runs/paramsALL.txt", header= T, sep= '\t')
+#names(df) <- tolower(names(df))
 
 
 
@@ -49,14 +49,14 @@ smSub <- split(sm, list(sm$sd_move, sm$mean_s), drop= T)
 
 
 ############################################################################################################################
-# example run (215499) 
+# example run (215500) 
 
 fst <- read.table("xRuns/Run215500/FSTtimeSeries.txt.bz2")
 colnames(fst) <- c("nGen", "locusID", "Fst", "allele_frequencies", "S_MAX1", "S_MAX0", "chromosomeMembership", "MAP", "locType")
 
 # afts
 afts <- read.table("xRuns/Run215500/AlleleFreqTimeSeries.txt.bz2")
-colnames(afts) <- c("nGen", "locusID", "AFpatch0", "AFpatch1", "is_reversed_locus", "locType", "AF", "AFdiff")
+colnames(afts) <- c("nGen", "locusID", "AFpatch0", "AFpatch1", "is_revesed_locus", "locType", "AF", "AFdiff")
 
 # LDs
 LDneut <- read.table('xRuns/Run215500/LDneutSitesAvg.txt.bz2')
@@ -278,18 +278,21 @@ load('~/flaxmans/bu2s/runs/PHIs/S_m/.RData')
 load('~/flaxmans/bu2s/runs/PHIs/sM/.RData')
 
 # on ruderalis
-load("~/schimar/bu2s/runs/Le/.RData")
-load("~/schimar/bu2s/runs/LD/.RData")
-load("~/schimar/bu2s/runs/PHIs/sm/.RData")
+#load("~/schimar/bu2s/runs/Le/.RData")
+#load("~/schimar/bu2s/runs/LD/.RData")
+#load("~/schimar/bu2s/runs/PHIs/sm/.RData")
 #load("~/schimar/bu2s/runs/PHIs/sM/.RData")
-load("~/schimar/bu2s/runs/PHIs/S_m/.RData")
+#load("~/schimar/bu2s/runs/PHIs/S_m/.RData")
 
-load("~/schimar/bu2s/runs/PHIs/sM/phis_sM1.RData")
+#load("~/schimar/bu2s/runs/PHIs/sM/phis_sM1.RData")
+
+
+
 
 # plot phis & afDiffS
 # sm
 plot(log10(phis_sm[[1]][[2]]), type= 'n', ylab= expression(phi)) #, ylim= c(-2, 1e+11)
-for (i in 1:length(phis_sm)) {
+for (i in 1:length(phis_sm[801:1600])) {
 	phiO <- phis_sm[[i]][[1]]
 	kphi <- phis_sm[[i]][[2]]
 	afDiffS <- phis_sm[[i]][[3]]
@@ -359,13 +362,13 @@ plotPhis(phis_sM9)
 #for (i in length(phis_Sm)) {
 	
 ############################ 
-# plot sets of phis (with ggplot2)
+# plot sets of phis 
 
 ######################### manual run 
 #load('sM_cWs_pcWallS.RData')
 
 
-phis <- phis_sM1 
+phis <- phis_sm[801:1600]
 
 
 kps <- unlist(lapply(phis, '[[', 2))
@@ -391,7 +394,7 @@ pcWallS <- unlist(lapply(phiOncW, unlist))
 
 gc()
 rm(phis)
-rm(phis_sM1)
+rm(phis_sm)
 
 kps_pHs <- as.data.frame(cbind(log10(kps), pHs, rep('C', length(kps))))
 names(kps_pHs) <- c('phi', 'p', 'group')
@@ -411,11 +414,11 @@ names(Nphi) <- c('phi', 'p', 'group')
 #allS <- as.data.frame(cbind(log10(pcWallS), cWs, rep('D', length(cWs))))
 #colnames(allS) <- c('phi', 'p', 'group')
 
-cWss <- x$cWs[c(TRUE, FALSE, FALSE)]
+cWss <- cWs[c(TRUE, FALSE, FALSE)]
 lpcWallSs <- log10(x$pcWallS[c(TRUE, FALSE, FALSE)])
 
 ##
-matplot(lpcWallSs, cWss, type= 'p', pch= '.', cex= 1.0, col= 'grey80', ylim= c(0,1), xlim= c(-2, 4.5), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])))
+matplot(pcWallS, cWs, type= 'p', pch= '.', cex= 1.0, col= 'grey80', ylim= c(0,1), xlim= c(-2, 4.5), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])), cex.lab= 1.4, cex.axis= 1.4)
 matpoints(Sphi$phi, Sphi$p, pch= '.', col= 'firebrick1')
 matpoints(kps_pHs$phi, kps_pHs$p, pch= '.', col= 'black', cex= 1.0)
 matpoints(Nphi$phi, Nphi$p, pch= '.', col= 'deepskyblue1')
@@ -423,6 +426,7 @@ legend('topleft', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), 
 
 ##################################################################
 
+matplot(1:10, type= 'n', xlab= 'generations * 1e-3', ylab= expression('log'[10], ' (metric)'), cex.lab= 1.6, cex.axis= 1.4, xlim= c(0, 600), ylim= c(-0.6,0.6))
 
 # create matrices with runs as rows and generations as columns
 #kphis <- do.call(rbind, lapply(phis_Sm, '[[', 2))
@@ -435,15 +439,33 @@ legend('topleft', legend= c(expression(paste(phi[Kruuk], ' ~ ', 'peq '[sMax])), 
 #
 
 
+# all PHIs  (with calcPHIs.3) 
+
+s500 <- ccStats.3('Run215500', df, cc500, maf= 0.025)
 
 
+# phis per Gen
+
+plot(log10(s500$kphisMax), type= 'l', col= 'green')
+points(log10(s500$phiBarsMax), type= 'l', col= 'darkgreen')
+
+points(log10(s500$phiBarMeanS), type= 'l', col= 'grey70')
+points(log10(kphiMeanS), type= 'l')
+legend('topleft', legend= c('kphi sMax', 'phiBar sMax', 'phiBar MeanS', 'kphi MeanS'), fill= c('green', 'darkgreen', 'grey70', 'black'), cex= 1.4)
 
 
+# phis ~ AFs & peq
 
+ccObj <- s500
 
-
-
-
+plot(log10(ccObj$kphisMax), ccObj$pHatsMax, type= 'l', ylim= c(0,  1), xlim= c(-2, 4), xlab= expression(paste('log'[10], ' ', phi)), ylab= expression(paste('p'[i0]~'- p'[i1])), col= 'black')
+	#abline(h= 0, lty= 3)
+	#}
+	points(log10(unlist(phiOncW)), unlist(cWallS), pch= '.', col= 'grey70') #type= 'l')
+	#points(log10(unlist(ccObj$phiObs)), unlist(lapply(lapply(ccObj$afDiffS, abs), mean)), pch= '.', cex= 1.4, col= 'firebrick1')
+	#points(log10(unlist(ccObj$phiObs)), unlist(lapply(lapply(ccObj$afDiffN, abs), mean)), pch= '.', cex= 1.4, col= 'deepskyblue1')
+	points(log10(kphiMeanS), unlist(lapply(lapply(ccObj$afDiffS, abs), mean)), pch= '.', cex= 1.4, col= 'green')
+	points(log10(kphiMeanS), unlist(lapply(lapply(ccObj$afDiffN, abs), mean)), pch= '.', cex= 1.4, col= 'purple')
 
 
 # better write this shit to a file
@@ -632,7 +654,7 @@ s500 <- ccStats.2('Run215500', df, cc500, maf= 0.025)
 #####  
 
 # for poster: Run206171 (sm[801,])
-cc171 <- readCCobj('Run206171', 'sm', path= paths) #'/media/schimar/dapperdata/bu2s/h5/')
+cc171 <- readCCobj('Run206171', 'sm', path= '/media/schimar/dapperdata/bu2s/h5/') 	#paths)
 s171 <- ccStats.2('Run206171', df, cc171, maf= 0.025)
 
 cc210 <- readCCobj('Run210070', 'sm', path= '/media/schimar/dapperdata/bu2s/h5/')
@@ -698,10 +720,17 @@ mIbin <- calcMorIbin(fstSpl)
 #IKSm <- xtractIK(Sm, setname= 'Sm', folder= 'Sm3')
 #IKsm <- xtractIK(sm, setname= 'sm', folder= 'sm')
 
-### IK_sM1 <- xtractIK(sMsub[[1]], setname= 'sM', folder= 'sM2', path= '/media/schimar/FLAXMAN/h5/')
+### 
+IK_sM1 <- xtractIK(sMsub[[1]][1:400,], setname= 'sM', folder= 'sM2', path= '/media/schimar/FLAXMAN/h5/')
+IK_sM1.2 <- xtractIK(sMsub[[1]][1:400,], setname= 'sM', folder= 'sM2', path= '/media/schimar/FLAXMAN/h5/')
+
+
+
 IK_sM3 <- xtractIK(sMsub[[3]], setname= 'sM', folder= 'sM2')
 IK_sM4 <- xtractIK(sMsub[[4]], setname= 'sM', folder= 'sM2')
-IK_sM5 <- xtractIK(sMsub[[5]], setname= 'sM', folder= 'sM2')gwc <- wrapGWCtime('/media/schimar/FLAXMAN/h5/', sm[801:1600,], setname= 'sm', folder= 'sm')
+IK_sM5 <- xtractIK(sMsub[[5]], setname= 'sM', folder= 'sM2')
+
+#gwc <- wrapGWCtime('/media/schimar/FLAXMAN/h5/', sm[801:1600,], setname= 'sm', folder= 'sm')
 
 
 IK_sM6 <- xtractIK(sMsub[[6]], setname= 'sM', folder= 'sM2')
@@ -744,6 +773,33 @@ plotFstMAPripKmorIbin(fstSpl, mIbin, mIKgen, static= F, wait= 0.8, time= 600)
 #      weight (which depends on the choice of edge correction listed
 #      above).
 
+########  evol2017
+
+plotFstMAPmorIgen(fstSpl, mIKgen, static= F, time= 600)
+
+
+plotAFdiffs(r499$afDiffS, r499$afDiffN, wait= 0.1, time= 610)
+
+
+
+
+######
+blue <- '#00BFFF'
+red <- '#FF3030'
+
+
+plotAFdiffs <- function(xS, xN, time= 1, wait= 0.3){
+	close.screen(all.screens= T)
+	par(bg = "white")
+	split.screen(c(2,1))
+	for (i in time:1250){
+		screen(1)
+		hist(xS[[i]], xlim= c(-1,1), ylim= c(0, 1000), xlab= 'allele freq diffs.', ylab= '# of sites', main= i, col= red, cex.lab= 1.8, cex.axis= 1.8)
+		screen(2)
+		hist(xN[[i]], xlim= c(-1,1), ylim= c(0, 1000), xlab= 'allele freq diffs.', ylab= '# of sites', main= '', col= blue,cex.lab= 1.8, cex.axis= 1.8)
+		Sys.sleep(wait)
+	}
+}
 
 
 ##############################################
@@ -805,9 +861,12 @@ plotFstMAPmorI <- function(fstspl, morI, time= 1,...) {
 load("~/schimar/bu2s/runs/mIripK/Sm/.RData")
 
 
-Ism <- lapply(IKsm[801:1600], '[[', 1)
+#Ism <- lapply(IKsm[801:1600], '[[', 1)
 
 Ism <- lapply(IKSm[801:1599], '[[', 1)
+
+Ism <- lapply(IK_sM1, '[[', 1)
+
 
 
 Iobs <- list()
@@ -828,8 +887,8 @@ points(Iobs[[1]][,4], type= 'l', col= 'chartreuse1')
 
 chrom1sm <- lapply(Iobs, '[[', 1)
 
-cols <- rainbow(1000)
-plot(chrom1sm[[1]], type= 'n', xlim= c(0, 290), ylim= c(-0.6, 0.7), xlab= 'generations / 172', ylab= "Moran's I")
+cols <- rainbow(500)
+plot(chrom1sm[[1]], type= 'n', xlim= c(0, 675), ylim= c(-0.6, 0.7), xlab= 'generations / 1e3', ylab= "Moran's I", cex.axis= 1.6)
 for (i in 1:length(chrom1sm)) {
 	points(chrom1sm[[i]], type= 'l', col= cols[i])
 }
@@ -931,7 +990,7 @@ x$cluster
 
 
 
-
+xLab <- ''
 
 
 ###
