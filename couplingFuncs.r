@@ -347,7 +347,7 @@ ccStats.2 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 	mutDist <- params$mutation_distribution
 	#
 	# calc Kruuk's phi and phiObs 
-	PHIs <- calcPHIs(aftsSpl, fstSpl, maf= maf, mapL= params$total_map_length, nChrom= params$nchromosomes)     # NOTE: we use a MAF threshold here! 
+	PHIs <- calcPHIs.3(aftsSpl, fstSpl, maf= maf, mapL= params$total_map_length, nChrom= params$nchromosomes)     # NOTE: we use a MAF threshold here! 
 	#
 	nLoci <- as.data.frame(cbind(nLoci, nLociS, PHIs$nLoci, PHIs$nLociS))
 	colnames(nLoci) <- c('nLoci', 'nLociS', 'nLocimaf', 'nLociSmaf')
@@ -358,7 +358,7 @@ ccStats.2 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 	avgAFdiff <- unlist(lapply(lapply(lapply(aftsSpl, '[[', 8), abs), mean))    # mean(abs(allAFdiffsPerGen))
 	#
 	#and using actual selection coefficients (sSel == S_MAX0)
-	# calc single locus exp. under full coupling (sMax) 
+	# calc single locues exp. under full coupling (sMax) 
 	sMaxlist <- lapply(PHIs$sMax, singleLocusEq, m= m, singleS= T)
 	pHatsMax <- unlist(lapply(sMaxlist, '[[', 1))
 	cWsMax <- unlist(lapply(sMaxlist, '[[', 2))
@@ -369,7 +369,8 @@ ccStats.2 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 	
 	# equilibrium freq & cline width for all sSel
 	clineWidthAllS <- lapply(sSel, singleLocusEq, m= m, singleS= F)
-	pBarAllS <- lapply(lapply(clineWidthAllS, '[[', 1), unlist)
+	pBarAllS <- lapply(lapply(lapply(clineWidthAllS, '[[', 1), unlist), unlist)
+	pBar <- unlist(lapply(pBarAllS, mean))
 	clineWallS <- lapply(lapply(clineWidthAllS, '[[', 2), unlist)
 
 	# get Fst values (s, n & total) per generation
@@ -379,7 +380,7 @@ ccStats.2 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 	FSTs <- as.data.frame(cbind(fstSel, fstNeut, fstAll))
 	names(FSTs) <- c('FSTsel', 'FSTneut', 'FSTtot')
 	# get effective s and Le   
-	sSLe <- calcLe(m, avgAFdiff, PHIs$sBar)
+	sSLe <- calcLe(m, pBar, PHIs$sBar)
 	sStarLeS <- as.data.frame(do.call(cbind, sSLe))
 	names(sStarLeS) <- c('sStar', 'Le', 's', 'pBar')
 	meanS <- calcMeanS(sSel, mutDist, gen, sConst)
@@ -448,8 +449,9 @@ ccStats.3 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 	
 	# equilibrium freq & cline width for all sSel
 	clineWidthAllS <- lapply(sSel, singleLocusEq, m= m, singleS= F)
-	pBarAllS <- lapply(clineWidthAllS, '[[', 1)
-	clineWallS <- lapply(clineWidthAllS, '[[', 2)
+	pBarAllS <- lapply(lapply(clineWidthAllS, '[[', 1), unlist)
+	pBar <- unlist(lapply(pBarAllS, mean))
+	clineWallS <- lapply(lapply(clineWidthAllS, '[[', 2), unlist)
 
 	# get Fst values (s, n & total) per generation
 	fstSel <- unlist(lapply(lapply(lapply(fstSpl, function(x)x[x$locType == 1,]), '[[', 3), mean))
@@ -458,7 +460,7 @@ ccStats.3 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 	FSTs <- as.data.frame(cbind(fstSel, fstNeut, fstAll))
 	names(FSTs) <- c('FSTsel', 'FSTneut', 'FSTtot')
 	# get effective s and Le   
-	sSLe <- calcLe(m, avgAFdiff, PHIs$sBar)
+	sSLe <- calcLe(m, pBar, PHIs$sBar)
 	sStarLeS <- as.data.frame(do.call(cbind, sSLe))
 	names(sStarLeS) <- c('sStar', 'Le', 's', 'pBar')
 		# 
@@ -835,17 +837,17 @@ xtractPhis <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/'
 		run <- data$run[i]
 		path5 <- paste('/runs/', run, sep= '')
 		#
-		ccObjTmp <- readCCobjRude(run, setname, folder, path)
+		ccObjTmp <- readCCobj(run, setname, path)
 		#ccTmp <- ccStats.2(data, ccObjTmp$fst, ccObjTmp$afts, ccObjTmp$LDsel, ccObjTmp$LDneut, ccObjTmp$effMig, run, maf= maf)
-		ccTmp <- ccStats.2(run= run, df= df, ccObj= ccObjTmp, maf= maf)
+		ccTmp <- ccStats.3(run= run, df= df, ccObj= ccObjTmp, maf= maf)
 		#ccTmp <- ccStats.2slim(run= run, df= df, ccObj= ccObjTmp, maf= maf)
 		#
 		avgAFdiffS <- unlist(lapply(lapply(ccTmp$afDiffS, abs), mean))
 		avgAFdiffN <- unlist(lapply(lapply(ccTmp$afDiffN, abs), mean))
 		cWallS <- lapply(ccTmp$cWallS, unlist)
-		runs[[i]] <- list(ccTmp$phiObs, ccTmp$kphisMax, ccTmp$pHatsMax, avgAFdiffS, avgAFdiffN, cWallS, ccTmp$pBarAllS)   # 
+		runs[[i]] <- list(ccTmp$phiObs, ccTmp$kphisMax, ccTmp$pHatsMax, avgAFdiffS, avgAFdiffN, cWallS, ccTmp$pBarAllS, ccTmp$sStarLeS$Le)   # 
 		names(runs)[i] <- run
-		names(runs[[i]]) <- c('phiObs', 'kphisMax', 'pHatsMax', 'afDiffS', 'afDiffN', 'cWallS', 'pBarAllS')
+		names(runs[[i]]) <- c('phiObs', 'kphisMax', 'pHatsMax', 'afDiffS', 'afDiffN', 'cWallS', 'pBarAllS', 'Le')
 		#phiObs[[i]] <- ccTmp$phiObs
 		#names(phiObs)[i] <- run
 		#kphisMax[[i]] <- ccTmp$kphisMax
