@@ -3,7 +3,7 @@
 library(rhdf5)
 #library(scales)
 library(ape)
-library(spatstat)
+#library(spatstat)
 
 
 # Barton 1983's coupling coefficient (theta = s/r)
@@ -369,8 +369,8 @@ ccStats.2 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 	
 	# equilibrium freq & cline width for all sSel
 	clineWidthAllS <- lapply(sSel, singleLocusEq, m= m, singleS= F)
-	pBarAllS <- lapply(clineWidthAllS, '[[', 1)
-	clineWallS <- lapply(clineWidthAllS, '[[', 2)
+	pBarAllS <- lapply(lapply(clineWidthAllS, '[[', 1), unlist)
+	clineWallS <- lapply(lapply(clineWidthAllS, '[[', 2), unlist)
 
 	# get Fst values (s, n & total) per generation
 	fstSel <- unlist(lapply(lapply(lapply(fstSpl, function(x)x[x$locType == 1,]), '[[', 3), mean))
@@ -397,6 +397,84 @@ ccStats.2 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 ##### output
 	out <- list(FSTs, LDsell, LDneutl, afDiff_s, afDiff_n, avgAFdiff, PHIs$sMax, PHIs$kphiSmax, pHatsMax, cWsMax, PHIs$phiObs, PHIs$sBar, pHatsBar, cWsBar, meanS, sStarLeS, m, effMig, unlist(maxEffMigSbar), gwcTimeSbar, unlist(maxEffMigMeanS), gwcTimeMeanS, clineWallS, pBarAllS, nLoci, maf, recomb)
 	names(out) <- c('FSTs', 'LDsel', 'LDneut', 'afDiffS', 'afDiffN', 'avgAFdiffs', 'sMax', 'kphisMax', 'pHatsMax', 'cWsMax', 'phiObs', 'sBar', 'pHatsBar', 'cWsBar', 'meanS', 'sStarLeS', 'sd_move', 'effMig', 'maxEffMigSbar', 'gwcTimeSbar', 'maxEffMigMeanS', 'gwcTimeMeanS', 'cWallS', 'pBarAllS', 'nLoci', 'maf', 'recomb')
+	return(out)
+}
+
+ccStats.3 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LDsel, LDneut, effMig, run, maf= 25e-4, nChrom= 4) {
+	# function to calculate coupling/congealing stats for a given run 
+	fst <- ccObj$fst
+	afts <- ccObj$afts
+	LDsel <- ccObj$LDsel #emRed <- em[em$nGen %in% unique(fst$nGen),]
+	#LDsel <- as.data.frame(ccObj$LDsel)[ccObj$LDsel[,1] %in% names(ccObj$phiObs),]
+	LDneut <- ccObj$LDneut
+	effMig <- ccObj$effMig[,1:2]
+	params <- df[which(df$run == run),]
+	m = params$sd_move
+	fstSpl <- split(fst, fst$nGen)
+	aftsSpl <- split(afts, afts$nGen)
+	nLoci <- unlist(lapply(lapply(fstSpl, dim), '[', 1))
+	gen <- length(aftsSpl)
+	fstSplS <- lapply(fstSpl, subset, locType == 1)
+	aftsSplS <- lapply(aftsSpl, subset, locType == 1)
+	nLociS <- as.numeric(unlist(lapply(fstSplS, nrow)))
+	p <- lapply(fstSplS, '[[', 4)
+	sSel <- lapply(fstSplS, '[[', 6)
+	# 
+	sConst <- params$deme0_constant_s
+	mutDist <- params$mutation_distribution
+	#
+	meanS <- calcMeanS(sSel, mutDist, gen, sConst)
+
+	# calc Kruuk's phi and phiObs 
+	PHIs <- calcPHIs.3(aftsSpl, fstSpl, maf= maf, mapL= params$total_map_length, nChrom= params$nchromosomes, meanS= meanS)     # NOTE: we use a MAF threshold here! 
+	#
+	nLoci <- as.data.frame(cbind(nLoci, nLociS, PHIs$nLoci, PHIs$nLociS))
+	colnames(nLoci) <- c('nLoci', 'nLociS', 'nLocimaf', 'nLociSmaf')
+	recomb <- PHIs$recomb
+	#  afDiffs
+	afDiff_s <- lapply(aftsSplS, '[[', 8)
+	afDiff_n <- lapply(lapply(aftsSpl, subset, locType == 0), '[[', 8)
+	avgAFdiff <- unlist(lapply(lapply(lapply(aftsSpl, '[[', 8), abs), mean))    # mean(abs(allAFdiffsPerGen))
+	#
+	#and using actual selection coefficients (sSel == S_MAX0)
+	# calc single locus exp. under full coupling (sMax) 
+	sMaxlist <- lapply(PHIs$sMax, singleLocusEq, m= m, singleS= T)
+	pHatsMax <- unlist(lapply(sMaxlist, '[[', 1))
+	cWsMax <- unlist(lapply(sMaxlist, '[[', 2))
+	# calc single locus exp. using actual selection coefficients (sSel == S_MAX0)
+	sBarlist <- lapply(lapply(PHIs$sBar, singleLocusEq, m= m, singleS= F), unlist)
+	pHatsBar <- unlist(lapply(sBarlist, '[[', 1))
+	cWsBar <- unlist(lapply(sBarlist, '[[', 2))
+	
+	# equilibrium freq & cline width for all sSel
+	clineWidthAllS <- lapply(sSel, singleLocusEq, m= m, singleS= F)
+	pBarAllS <- lapply(clineWidthAllS, '[[', 1)
+	clineWallS <- lapply(clineWidthAllS, '[[', 2)
+
+	# get Fst values (s, n & total) per generation
+	fstSel <- unlist(lapply(lapply(lapply(fstSpl, function(x)x[x$locType == 1,]), '[[', 3), mean))
+	fstNeut <- unlist(lapply(lapply(lapply(fstSpl, function(x)x[x$locType == 0,]), '[[', 3), mean))
+	fstAll <- unlist(lapply(lapply(fstSpl, '[[', 3), mean))
+	FSTs <- as.data.frame(cbind(fstSel, fstNeut, fstAll))
+	names(FSTs) <- c('FSTsel', 'FSTneut', 'FSTtot')
+	# get effective s and Le   
+	sSLe <- calcLe(m, avgAFdiff, PHIs$sBar)
+	sStarLeS <- as.data.frame(do.call(cbind, sSLe))
+	names(sStarLeS) <- c('sStar', 'Le', 's', 'pBar')
+		# 
+	LDsell <- LDsel[, c(1,4)]
+	LDneutl <- LDneut[, c(1,4)]
+	#FSTout <- as.data.frame(matrix(unlist(FSTs),ncol=3, byrow=TRUE, dimnames= list(NULL, c('FSTneut', 'FSTsel', 'FSTtot'))))
+	######sStLeS <- do.call('rbind', sStLeS)
+	# maxEffMig with sBar (phi/ (L * r))
+	maxEffMigSbar <- calcMaxEffMig(PHIs$sBar, m, unlist(lapply(fstSpl, length)))[[2]]
+	gwcTimeSbar <- calcGWCtime(effMig, maxEffMigSbar, params$end_period_allopatry)
+	# maxEffMig with meanS (geomean of sMax[i])
+	maxEffMigMeanS <- calcMaxEffMig(meanS, m, unlist(lapply(fstSpl, length)))[[2]]
+	gwcTimeMeanS <- calcGWCtime(effMig, maxEffMigMeanS, params$end_period_allopatry)
+##### output
+	out <- list(FSTs, LDsell, LDneutl, afDiff_s, afDiff_n, avgAFdiff, PHIs$sMax, PHIs$kphiSmax, pHatsMax, cWsMax, PHIs$phiObs, PHIs$sBar, pHatsBar, cWsBar, meanS, sStarLeS, m, effMig, unlist(maxEffMigSbar), gwcTimeSbar, unlist(maxEffMigMeanS), gwcTimeMeanS, clineWallS, pBarAllS, nLoci, maf, recomb, PHIs$kphiMeanS, PHIs$phiBarMeanS, PHIs$phiBarsMax)
+	names(out) <- c('FSTs', 'LDsel', 'LDneut', 'afDiffS', 'afDiffN', 'avgAFdiffs', 'sMax', 'kphisMax', 'pHatsMax', 'cWsMax', 'phiObs', 'sBar', 'pHatsBar', 'cWsBar', 'meanS', 'sStarLeS', 'sd_move', 'effMig', 'maxEffMigSbar', 'gwcTimeSbar', 'maxEffMigMeanS', 'gwcTimeMeanS', 'cWallS', 'pBarAllS', 'nLoci', 'maf', 'recomb', 'kphiMeanS', 'phiBarMeanS', 'phiBarsMax')
 	return(out)
 }
 
@@ -704,14 +782,47 @@ calcPHIs <- function(aftsSpl, fstSpl, maf= 25e-4, mapL= 100, nChrom= 4) {
 	# calc Kruuk's phi 
 	kphiSmax <- ((unlist(nLociS) - 1) * (sMax / recomb))
 	#
-	# phiObs & sBar
-	phiObs <- unlist(lapply(sSel, sum)) / recomb
-	sBar <- (phiObs / unlist(nLociS)) * recomb
-	#
-	out <- list(sMax, kphiSmax, phiObs, sBar, nLociS, nLoci, recomb)
+		#
+	out <- list(sMax, kphiSmax, phiObs, sBar, nLociS, nLoci, recombx)
 	names(out) <- c('sMax', 'kphiSmax', 'phiObs', 'sBar', 'nLociS', 'nLoci', 'recomb')
 	return(out)
 }
+
+calcPHIs.3 <- function(aftsSpl, fstSpl, maf= 25e-4, mapL= 100, nChrom= 4, meanS= NULL) {
+	#afts <- subset(afts, fst$allele_frequencies >= maf)
+	#fst <- subset(fst, fst$allele_frequencies >= maf)
+	aftsSplmaf <- lapply(aftsSpl, function(x)x[x$AF >= 0.1,])
+	fstSplmaf <- lapply(fstSpl, function(x)x[x$allele_frequencies >= 0.1,])
+	nLoci <- unlist(lapply(lapply(fstSplmaf, dim), '[', 1))
+	# 
+	fstSplS <- lapply(fstSplmaf, subset, locType == 1)
+	aftsSplS <- lapply(aftsSplmaf, subset, locType == 1)
+	nLociS <- as.numeric(unlist(lapply(fstSplS, nrow)))
+	p <- lapply(fstSplS, '[[', 4)
+	sSel <- lapply(fstSplS, '[[', 6)
+	# calc recombination 
+	recomb <- unlist(lapply(nLociS, calcRecomb, map= 0.02*mapL, nChrom= nChrom))
+	# calc sMax
+	sMax <- unlist(lapply(sSel, function(x) prod(1 + x)-1))
+	# calc Kruuk's phi 
+	kphiSmax <- ((unlist(nLociS) - 1) * (sMax / recomb))
+	#
+	kphiMeanS <- ((unlist(nLociS) -1) * (meanS / recomb))
+	# phiObs & sBar
+	phiObs <- unlist(lapply(sSel, sum)) / recomb
+	sBar <- (phiObs / unlist(nLociS)) * recomb
+
+	# Barton's phi w/ meanS
+	phiBarMeanS <- meanS / recomb
+	# Barton's phi w/ sMax
+	phiBarsMax <- sMax / recomb
+
+	#
+	out <- list(sMax, kphiMeanS, kphiSmax, phiObs, sBar, nLociS, nLoci, recomb, phiBarMeanS, phiBarsMax)
+	names(out) <- c('sMax', 'kphiMeans', 'kphiSmax', 'phiObs', 'sBar', 'nLociS', 'nLoci', 'recomb', 'phiBarMeanS', 'phiBarsMax')
+	return(out)
+}
+
 
 
 
@@ -809,7 +920,7 @@ xtractLe <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/', 
 		#
 		ccObjTmp <- readCCobjRude(run, setname, folder, path)
 		#ccTmp <- ccStats.2(data, ccObjTmp$fst, ccObjTmp$afts, ccObjTmp$LDsel, ccObjTmp$LDneut, ccObjTmp$effMig, run, maf= maf)
-		ccTmp <- ccStats.2(run= run, df= df, ccObj= ccObjTmp, maf= maf)
+		ccTmp <- ccStats.3(run= run, df= df, ccObj= ccObjTmp, maf= maf)
 		runs[[i]] <- list(ccTmp$sStarLeS, ccTmp$effMig, ccTmp$maxEffMigMeanS, ccTmp$gwcTimeMeanS, data$ts_sampling_frequency[i])   # 
 		names(runs)[i] <- run
 		names(runs[[i]]) <- c('sStarLeS', 'effMig', 'maxEffMigMeanS', 'tsFreq')
@@ -1186,7 +1297,9 @@ plotFstMAPmorIgen <- function(fstspl, morIgen, time= 1, static= F, wait= 0.1, ..
 	# function to plot both the MAP vs Fst and Moran's I and Moran's I per generation and chromosome 
 	# INPUT: fst data split by nGen, nested list of Moran's I values (per gen, chrom and bin) and the generation time to start the loop (with nGen/tsFreq).
 	close.screen(all.screens= T)
-
+	blue <- '#00BFFF'
+	red <- '#FF3030'
+	
 	par(bg = "white") # erase.screen() will appear not to work if the background color is transparent 
 	split.screen(c(2,1))  # split into two rows, one column  (screens = 1,2)
 	split.screen(c(1,4), screen= 1)   # split top row (screen 1) into 4 columns (screens = [3,4,5,6])
@@ -1196,7 +1309,9 @@ plotFstMAPmorIgen <- function(fstspl, morIgen, time= 1, static= F, wait= 0.1, ..
 		for (j in 1:length(unique(chrom))) {
 			screen(j+2)
 			cChrom <- fstspl[[i]][which(chrom == unique(chrom)[j]),]
-			plot(cChrom$MAP, cChrom$Fst, col= as.factor(cChrom$locType), xlim= c(0, 25), ylim= c(0,1), main= paste('chrom ', j-1, ' gen = ', i), ylab= 'Fst', xlab= 'map', pch= 20)
+			colsX <- rep(blue, length(cChrom$locType))
+			colsX[which(cChrom$locType == 1)] <- red
+			plot(cChrom$MAP, cChrom$Fst, col= colsX, xlim= c(0, 25), ylim= c(0,1), main= paste('chrom ', j-1, ' gen = ', i), ylab= 'Fst', xlab= 'map', pch= 20)
 			lines(cChrom$MAP, cChrom$Fst, col= 'grey70')
 		
 		#for (j in 1:length(morIbin[[i]])) {
