@@ -137,7 +137,7 @@ phis_sM9 <- xtractPhis(sMsub[[9]], setname= 'sM', folder= 'sM2', maf= 0.025) 		#
 
 # xtractLe 
 
-Le_Sm <- xtractLe(Sm, setname= 'Sm', folder= 'Sm3', maf= 0.025)
+Le_Sm <- xtractLe(Sm, setname= 'Sm', folder= 'Sm', maf= 0.025, path= '/media/schimar/dapperdata/bu2s/h5/')
 Le_sm <- xtractLe(sm, setname= 'sm', folder= 'sm', maf= 0.025)
 
 Le_sM1 <- xtractLe(sMsub[[1]], setname= 'sM', folder= 'sM2', maf= 0.025)
