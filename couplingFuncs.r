@@ -362,7 +362,7 @@ ccStats.2 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 
 	#and using actual selection coefficients (sSel == S_MAX0)
 	# calc single locues exp. under full coupling (sMax) 
-	sMaxlist <- lapply(PHIs$sMax, singleLocusEq, m= m, singleS= T)
+	sMaxlist <- lapply(PHIs$sMax, singleLocccTmp$pBarAllS, usEq, m= m, singleS= T)
 	pHatsMax <- unlist(lapply(sMaxlist, '[[', 1))
 	cWsMax <- unlist(lapply(sMaxlist, '[[', 2))
 	# calc single locus exp. using actual selection coefficients (sSel == S_MAX0)
@@ -440,6 +440,9 @@ ccStats.3 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 	afDiff_n <- lapply(lapply(aftsSpl, subset, locType == 0), '[[', 8)
 	avgAFdiff <- unlist(lapply(lapply(lapply(aftsSpl, '[[', 8), abs), mean))    # mean(abs(allAFdiffsPerGen))
 	#
+	# pBar
+	pBarls <- PHIs$pBarls
+	pBar <- unlist(lapply(pBarls, mean))
 	# calc single locus exp. under full coupling (sMax) 
 	sMaxlist <- lapply(PHIs$sMax, singleLocusEq, m= m, singleS= T)
 	pHatsMax <- unlist(lapply(sMaxlist, '[[', 1))
@@ -451,8 +454,8 @@ ccStats.3 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 	
 	# equilibrium freq & cline width for all sSel
 	clineWidthAllS <- lapply(sSel, singleLocusEq, m= m, singleS= F)
-	pBarAllS <- lapply(lapply(clineWidthAllS, '[[', 1), unlist)
-	pBar <- unlist(lapply(pBarAllS, mean))
+	pHatAllS <- lapply(lapply(clineWidthAllS, '[[', 1), unlist)
+	pHat <- unlist(lapply(pHatAllS, mean))
 	clineWallS <- lapply(lapply(clineWidthAllS, '[[', 2), unlist)
 
 	# get Fst values (s, n & total) per generation
@@ -477,8 +480,8 @@ ccStats.3 <- function(run, df, ccObj, maf= 25e-4, nChrom= 4) {    #fst, afts, LD
 	maxEffMigMeanS <- calcMaxEffMig(meanS, m, unlist(lapply(fstSpl, length)))[[2]]
 	gwcTimeMeanS <- calcGWCtime(effMig, maxEffMigMeanS, params$end_period_allopatry)
 ##### output
-	out <- list(FSTs, LDsell, LDneutl, afDiff_s, afDiff_n, avgAFdiff, PHIs$sMax, PHIs$kphiSmax, pHatsMax, cWsMax, PHIs$phiObs, PHIs$sBar, pHatsBar, cWsBar, meanS, sStarLeS, m, effMig, unlist(maxEffMigSbar), gwcTimeSbar, unlist(maxEffMigMeanS), gwcTimeMeanS, clineWallS, pBarAllS, nLoci, maf, recomb, PHIs$kphiMeanS, PHIs$phiBarMeanS, PHIs$phiBarsMax)
-	names(out) <- c('FSTs', 'LDsel', 'LDneut', 'afDiffS', 'afDiffN', 'avgAFdiffs', 'sMax', 'kphisMax', 'pHatsMax', 'cWsMax', 'phiObs', 'sBar', 'pHatsBar', 'cWsBar', 'meanS', 'sStarLeS', 'sd_move', 'effMig', 'maxEffMigSbar', 'gwcTimeSbar', 'maxEffMigMeanS', 'gwcTimeMeanS', 'cWallS', 'pBarAllS', 'nLoci', 'maf', 'recomb', 'kphiMeanS', 'phiBarMeanS', 'phiBarsMax')
+	out <- list(FSTs, LDsell, LDneutl, afDiff_s, afDiff_n, avgAFdiff, PHIs$sMax, PHIs$kphiSmax, pHatsMax, cWsMax, PHIs$phiObs, PHIs$sBar, pHatsBar, cWsBar, meanS, sStarLeS, m, effMig, unlist(maxEffMigSbar), gwcTimeSbar, unlist(maxEffMigMeanS), gwcTimeMeanS, clineWallS, nLoci, maf, recomb, PHIs$kphiMeanS, PHIs$phiBarMeanS, PHIs$phiBarsMax, pBarls)
+	names(out) <- c('FSTs', 'LDsel', 'LDneut', 'afDiffS', 'afDiffN', 'avgAFdiffs', 'sMax', 'kphisMax', 'pHatsMax', 'cWsMax', 'phiObs', 'sBar', 'pHatsBar', 'cWsBar', 'meanS', 'sStarLeS', 'sd_move', 'effMig', 'maxEffMigSbar', 'gwcTimeSbar', 'maxEffMigMeanS', 'gwcTimeMeanS', 'cWallS', 'nLoci', 'maf', 'recomb', 'kphiMeanS', 'phiBarMeanS', 'phiBarsMax', 'pBarls')
 	return(out)
 }
 
@@ -849,7 +852,7 @@ xtractPhis <- function(data, setname, folder, path= '/media/schimar/FLAXMAN/h5/'
 		avgAFdiffS <- unlist(lapply(lapply(ccTmp$afDiffS, abs), mean))
 		avgAFdiffN <- unlist(lapply(lapply(ccTmp$afDiffN, abs), mean))
 		cWallS <- lapply(ccTmp$cWallS, unlist)
-		runs[[i]] <- list(ccTmp$phiObs, ccTmp$kphisMax, ccTmp$pHatsMax, avgAFdiffS, avgAFdiffN, cWallS, ccTmp$pBarAllS, ccTmp$sStarLeS$Le)   # 
+		runs[[i]] <- list(ccTmp$phiObs, ccTmp$kphisMax, ccTmp$pHatsMax, avgAFdiffS, avgAFdiffN, cWallS, ccTmp$sStarLeS$Le, ccTmp$pBarls)   # 
 		names(runs)[i] <- run
 		names(runs[[i]]) <- c('phiObs', 'kphisMax', 'pHatsMax', 'afDiffS', 'afDiffN', 'cWallS', 'pBarAllS', 'Le')
 		#phiObs[[i]] <- ccTmp$phiObs
